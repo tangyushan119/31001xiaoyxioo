@@ -12,12 +12,16 @@ export class Storage {
         this.farms = [];
         this.animals = [];
         this.plantations = [];
+        this.playerPosition = null;
+        
+        this.autoSaveInterval = null;
         
         this.init();
     }
 
     init() {
         this.loadFromLocalStorage();
+        this.startAutoSave();
     }
 
     loadFromLocalStorage() {
@@ -25,13 +29,19 @@ export class Storage {
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                this.resources = { ...this.resources, ...data.resources };
+                
+                if (data.resources) {
+                    this.resources = { ...this.resources, ...data.resources };
+                }
+                
                 this.buildings = data.buildings || [];
                 this.farms = data.farms || [];
                 this.animals = data.animals || [];
                 this.plantations = data.plantations || [];
+                this.playerPosition = data.playerPosition || null;
             } catch (e) {
                 console.warn('Failed to load saved data:', e);
+                this.resetToDefaults();
             }
         }
     }
@@ -42,9 +52,51 @@ export class Storage {
             buildings: this.buildings,
             farms: this.farms,
             animals: this.animals,
-            plantations: this.plantations
+            plantations: this.plantations,
+            playerPosition: this.playerPosition
         };
-        localStorage.setItem('islandGameData', JSON.stringify(data));
+        
+        try {
+            localStorage.setItem('islandGameData', JSON.stringify(data));
+        } catch (e) {
+            console.warn('Failed to save data:', e);
+        }
+    }
+
+    startAutoSave() {
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+        }
+        
+        this.autoSaveInterval = setInterval(() => {
+            this.saveToLocalStorage();
+        }, 5000);
+        
+        window.addEventListener('beforeunload', () => {
+            this.saveToLocalStorage();
+        });
+    }
+
+    stopAutoSave() {
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+            this.autoSaveInterval = null;
+        }
+    }
+
+    resetToDefaults() {
+        this.resources = {
+            wood: 100,
+            stone: 50,
+            food: 30,
+            water: 50,
+            gold: 0
+        };
+        this.buildings = [];
+        this.farms = [];
+        this.animals = [];
+        this.plantations = [];
+        this.playerPosition = null;
     }
 
     getResources() {
@@ -152,18 +204,17 @@ export class Storage {
         }
     }
 
+    getPlayerPosition() {
+        return this.playerPosition ? { ...this.playerPosition } : null;
+    }
+
+    savePlayerPosition(x, y) {
+        this.playerPosition = { x, y };
+        this.saveToLocalStorage();
+    }
+
     clearAll() {
-        this.resources = {
-            wood: 100,
-            stone: 50,
-            food: 30,
-            water: 50,
-            gold: 0
-        };
-        this.buildings = [];
-        this.farms = [];
-        this.animals = [];
-        this.plantations = [];
+        this.resetToDefaults();
         localStorage.removeItem('islandGameData');
     }
 
@@ -177,5 +228,20 @@ export class Storage {
 
     getTotalAnimalCount() {
         return this.animals.length;
+    }
+
+    hasEnoughResources(cost) {
+        for (const [key, value] of Object.entries(cost)) {
+            if (this.resources[key] < value) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    consumeResources(cost) {
+        for (const [key, value] of Object.entries(cost)) {
+            this.modifyResource(key, -value);
+        }
     }
 }

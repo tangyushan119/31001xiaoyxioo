@@ -2,16 +2,123 @@ export class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
-        this.width = 600;
+        this.width = 800;
         this.height = 600;
         this.game = null;
+        this.sprites = {};
+        this.isLoaded = false;
+        this.loadedCount = 0;
+        this.totalSprites = 3;
         
         this.init();
     }
 
     init() {
+        this.resizeToFit();
+        this.loadSprites();
+        this.setupResizeListener();
+    }
+
+    setupResizeListener() {
+        window.addEventListener('resize', () => {
+            this.resizeToFit();
+            if (this.game && this.game.terrain) {
+                this.game.terrain.updateDimensions();
+            }
+        });
+    }
+
+    resizeToFit() {
+        const container = this.canvas.parentElement;
+        const padding = 250;
+        this.width = container.clientWidth - padding;
+        this.height = container.clientHeight;
+        
         this.canvas.width = this.width;
         this.canvas.height = this.height;
+    }
+
+    loadSprites() {
+        const spriteList = [
+            { name: 'grass', path: this.createGrassPattern() },
+            { name: 'water', path: this.createWaterPattern() },
+            { name: 'beach', path: this.createBeachPattern() }
+        ];
+
+        spriteList.forEach(sprite => {
+            const img = new Image();
+            img.onload = () => {
+                this.sprites[sprite.name] = img;
+                this.loadedCount++;
+                if (this.loadedCount >= this.totalSprites) {
+                    this.isLoaded = true;
+                }
+            };
+            img.onerror = () => {
+                this.sprites[sprite.name] = null;
+                this.loadedCount++;
+            };
+            img.src = sprite.path;
+        });
+    }
+
+    createGrassPattern() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        
+        const colors = ['#2ecc71', '#27ae60', '#229954', '#1e8449'];
+        for (let i = 0; i < 32; i += 4) {
+            for (let j = 0; j < 32; j += 4) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                ctx.fillStyle = color;
+                ctx.fillRect(i, j, 4, 4);
+            }
+        }
+        return canvas.toDataURL();
+    }
+
+    createWaterPattern() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        
+        const gradient = ctx.createLinearGradient(0, 0, 32, 32);
+        gradient.addColorStop(0, '#3498db');
+        gradient.addColorStop(0.5, '#2980b9');
+        gradient.addColorStop(1, '#2c3e50');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 32, 32);
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        for (let i = 0; i < 8; i++) {
+            const x = Math.random() * 32;
+            const y = Math.random() * 32;
+            ctx.beginPath();
+            ctx.arc(x, y, Math.random() * 2 + 1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        return canvas.toDataURL();
+    }
+
+    createBeachPattern() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        
+        const colors = ['#f5deb3', '#f4d03f', '#f0c419', '#e6b800'];
+        for (let i = 0; i < 32; i += 4) {
+            for (let j = 0; j < 32; j += 4) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                ctx.fillStyle = color;
+                ctx.fillRect(i, j, 4, 4);
+            }
+        }
+        return canvas.toDataURL();
     }
 
     setGame(game) {
@@ -19,15 +126,31 @@ export class Renderer {
     }
 
     render() {
+        if (!this.isLoaded) {
+            this.renderLoadingScreen();
+            return;
+        }
+        
         this.clear();
         this.renderTerrain();
         this.renderBuildings();
         this.renderPlayer();
-        this.renderUI();
+        this.renderGrid();
+    }
+
+    renderLoadingScreen() {
+        this.ctx.fillStyle = '#1a1a2e';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '24px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(`加载中... ${Math.round((this.loadedCount / this.totalSprites) * 100)}%`, this.width / 2, this.height / 2);
     }
 
     clear() {
-        this.ctx.fillStyle = '#1a1a2e';
+        this.ctx.fillStyle = '#0a1628';
         this.ctx.fillRect(0, 0, this.width, this.height);
     }
 
@@ -67,15 +190,11 @@ export class Renderer {
         }
     }
 
-    renderUI() {
-        this.renderGrid();
-    }
-
     renderGrid() {
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
         this.ctx.lineWidth = 1;
         
-        const gridSize = 30;
+        const gridSize = 40;
         
         for (let x = 0; x < this.width; x += gridSize) {
             this.ctx.beginPath();
@@ -114,6 +233,22 @@ export class Renderer {
         this.ctx.restore();
     }
 
+    drawImage(spriteName, x, y, width, height) {
+        const sprite = this.sprites[spriteName];
+        if (sprite && sprite.complete) {
+            this.ctx.drawImage(sprite, x, y, width, height);
+        }
+    }
+
+    fillPattern(spriteName, x, y, width, height) {
+        const sprite = this.sprites[spriteName];
+        if (sprite && sprite.complete) {
+            const pattern = this.ctx.createPattern(sprite, 'repeat');
+            this.ctx.fillStyle = pattern;
+            this.ctx.fillRect(x, y, width, height);
+        }
+    }
+
     getWidth() {
         return this.width;
     }
@@ -127,5 +262,13 @@ export class Renderer {
         this.height = height;
         this.canvas.width = width;
         this.canvas.height = height;
+    }
+
+    getSprite(name) {
+        return this.sprites[name] || null;
+    }
+
+    isReady() {
+        return this.isLoaded;
     }
 }

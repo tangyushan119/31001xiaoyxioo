@@ -11,27 +11,26 @@
             box-sizing: border-box;
         }
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         #game-container {
             display: flex;
-            gap: 20px;
-            align-items: flex-start;
+            width: 100%;
+            height: 100vh;
+            position: relative;
         }
 
         #build-panel {
-            width: 120px;
+            width: 100px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 15px;
+            padding: 15px 10px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -48,8 +47,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 32px;
+            font-size: 36px;
             background: rgba(255, 255, 255, 0.15);
+            user-select: none;
         }
 
         .build-item:hover {
@@ -63,24 +63,31 @@
             cursor: grabbing;
         }
 
+        .build-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
         #game-canvas {
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            flex: 1;
+            display: block;
+            background: #1a1a2e;
         }
 
         #info-panel {
-            width: 150px;
+            width: 140px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: 12px;
             padding: 15px;
             color: white;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .info-item {
-            margin-bottom: 10px;
-            padding: 8px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 6px;
         }
@@ -93,9 +100,77 @@
         }
 
         .info-item value {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #4ade80;
+        }
+
+        #reset-btn {
+            margin-top: auto;
+            padding: 10px;
+            background: rgba(231, 76, 60, 0.8);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #reset-btn:hover {
+            background: rgba(231, 76, 60, 1);
+            transform: scale(1.05);
+        }
+
+        #drag-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            font-size: 24px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #drag-overlay.active {
+            display: flex;
+        }
+
+        #drag-overlay .drag-item {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 2px solid #4ade80;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1001;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
     </style>
 </head>
@@ -107,26 +182,39 @@
             <div class="build-item" data-type="storage" draggable="true">📦</div>
             <div class="build-item" data-type="farm" draggable="true">🌾</div>
             <div class="build-item" data-type="fishing" draggable="true">🎣</div>
+            <div class="build-item" data-type="campfire" draggable="true">🔥</div>
+            <div class="build-item" data-type="well" draggable="true">⛏️</div>
         </div>
+        
         <canvas id="game-canvas"></canvas>
+        
         <div id="info-panel">
             <div class="info-item">
-                <label>木材</label>
+                <label>🪵 木材</label>
                 <value id="wood">100</value>
             </div>
             <div class="info-item">
-                <label>石头</label>
+                <label>🪨 石头</label>
                 <value id="stone">50</value>
             </div>
             <div class="info-item">
-                <label>食物</label>
+                <label>🍖 食物</label>
                 <value id="food">30</value>
             </div>
             <div class="info-item">
-                <label>建筑数</label>
+                <label>💧 淡水</label>
+                <value id="water">50</value>
+            </div>
+            <div class="info-item">
+                <label>🏗️ 建筑</label>
                 <value id="buildings">0</value>
             </div>
+            <button id="reset-btn">🔄 重置存档</button>
         </div>
+    </div>
+    
+    <div id="drag-overlay">
+        <div class="drag-item" id="drag-preview"></div>
     </div>
 
     <script type="module" src="src/main.js"></script>
