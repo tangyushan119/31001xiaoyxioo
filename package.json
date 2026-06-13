@@ -1,0 +1,9 @@
+{
+  "name": "island-game",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node test/test_land_renderer.js",
+    "start": "node server.js"
+  }
+}
