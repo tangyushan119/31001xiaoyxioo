@@ -24,18 +24,16 @@ export class SeaRenderer {
 
     drawSea() {
         const gradient = this.ctx.createRadialGradient(
-            this.centerX, this.centerY, this.seaRadius + 50,
+            this.centerX, this.centerY, this.seaRadius,
             this.centerX, this.centerY, this.maxRadius
         );
-        gradient.addColorStop(0, '#5dade2');
-        gradient.addColorStop(0.4, '#3498db');
-        gradient.addColorStop(0.7, '#2980b9');
+        gradient.addColorStop(0, '#4a9eff');
+        gradient.addColorStop(0.3, '#3498db');
+        gradient.addColorStop(0.6, '#2980b9');
         gradient.addColorStop(1, '#1a5276');
         
         this.ctx.fillStyle = gradient;
-        this.ctx.beginPath();
-        this.ctx.arc(this.centerX, this.centerY, this.maxRadius, 0, Math.PI * 2);
-        this.ctx.fill();
+        this.ctx.fillRect(0, 0, this.renderer.width, this.renderer.height);
     }
 
     isInSea(x, y) {

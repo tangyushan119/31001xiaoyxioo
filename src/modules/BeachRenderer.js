@@ -34,11 +34,7 @@ export class BeachRenderer {
         this.ctx.fillStyle = gradient;
         this.ctx.beginPath();
         this.ctx.arc(this.centerX, this.centerY, this.outerRadius, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.fillStyle = '#0a1628';
-        this.ctx.beginPath();
-        this.ctx.arc(this.centerX, this.centerY, this.innerRadius, 0, Math.PI * 2);
+        this.ctx.arc(this.centerX, this.centerY, this.innerRadius, 0, Math.PI * 2, true);
         this.ctx.fill();
     }
 
