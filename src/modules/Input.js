@@ -201,8 +201,6 @@ export class Input {
     }
 
     update() {
-        this.mouse.clicked = false;
-        this.mouse.released = false;
     }
 
     reset() {
