@@ -4,6 +4,7 @@ import { Player } from './modules/Player.js';
 import { Storage } from './modules/Storage.js';
 import { Input } from './modules/Input.js';
 import { BuildPanel } from './components/BuildPanel.js';
+import { ResourceManager } from './modules/ResourceManager.js';
 
 export class Game {
     constructor() {
@@ -14,6 +15,7 @@ export class Game {
         this.terrain = null;
         this.player = null;
         this.buildPanel = null;
+        this.resourceManager = null;
         
         this.lastTime = 0;
         this.isRunning = false;
@@ -62,6 +64,8 @@ export class Game {
         
         this.buildPanel = new BuildPanel(this);
         
+        this.resourceManager = new ResourceManager(this);
+        
         this.renderer.setGame(this);
         
         this.buildPanel.updateResourceDisplay();
@@ -95,6 +99,10 @@ export class Game {
         this.player.update(deltaTime);
         this.input.update();
         
+        if (this.resourceManager) {
+            this.resourceManager.update(deltaTime);
+        }
+        
         this.checkBuildingInteractions();
     }
 
@@ -105,6 +113,10 @@ export class Game {
         }
         
         this.renderer.render();
+        
+        if (this.resourceManager) {
+            this.resourceManager.render(this.renderer.ctx);
+        }
     }
 
     checkBuildingInteractions() {
@@ -138,6 +150,9 @@ export class Game {
     restart() {
         this.storage.clearAll();
         this.player.init();
+        if (this.resourceManager) {
+            this.resourceManager = new ResourceManager(this);
+        }
         this.buildPanel.updateResourceDisplay();
         this.buildPanel.updateBuildingCount();
         this.buildPanel.updateBuildItemStates();
@@ -148,7 +163,7 @@ export class Game {
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.style.background = 'rgba(52, 152, 219, 0.9)';
-        toast.textContent = '🌴 欢迎来到海岛生存！使用 WASD 或方向键移动';
+        toast.textContent = '🌴 欢迎来到海岛生存！使用 WASD 或方向键移动，靠近资源点击采集';
         document.body.appendChild(toast);
         
         setTimeout(() => {
@@ -181,6 +196,10 @@ export class Game {
 
     getBuildPanel() {
         return this.buildPanel;
+    }
+
+    getResourceManager() {
+        return this.resourceManager;
     }
 }
 
