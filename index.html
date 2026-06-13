@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海岛生存建造游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #game-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        #build-panel {
+            width: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .build-item {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .build-item:hover {
+            transform: scale(1.1);
+            border-color: #4ade80;
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+        }
+
+        .build-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        #game-canvas {
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        #info-panel {
+            width: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+        }
+
+        .info-item value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="build-panel">
+            <div class="build-item" data-type="house" draggable="true">🏠</div>
+            <div class="build-item" data-type="hut" draggable="true">🏚️</div>
+            <div class="build-item" data-type="storage" draggable="true">📦</div>
+            <div class="build-item" data-type="farm" draggable="true">🌾</div>
+            <div class="build-item" data-type="fishing" draggable="true">🎣</div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+        <div id="info-panel">
+            <div class="info-item">
+                <label>木材</label>
+                <value id="wood">100</value>
+            </div>
+            <div class="info-item">
+                <label>石头</label>
+                <value id="stone">50</value>
+            </div>
+            <div class="info-item">
+                <label>食物</label>
+                <value id="food">30</value>
+            </div>
+            <div class="info-item">
+                <label>建筑数</label>
+                <value id="buildings">0</value>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
