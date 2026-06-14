@@ -114,6 +114,23 @@ export class InventoryPanel {
     show() {
         this.panel.style.display = 'block';
         this.updateInventory();
+        this.centerPanel();
+    }
+    
+    centerPanel() {
+        const canvas = document.getElementById('game-canvas');
+        if (!canvas) return;
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const panelRect = this.panel.getBoundingClientRect();
+        
+        const left = canvasRect.left + (canvasRect.width - panelRect.width) / 2;
+        const top = canvasRect.top + (canvasRect.height - panelRect.height) / 2;
+        
+        this.panel.style.position = 'fixed';
+        this.panel.style.left = left + 'px';
+        this.panel.style.top = top + 'px';
+        this.panel.style.transform = 'none';
     }
     
     hide() {
