@@ -23,6 +23,8 @@ export class Game {
         this.isRunning = false;
         this.isReady = false;
         
+        this.selectedSeed = null;
+        
         this.init();
     }
 
@@ -42,6 +44,12 @@ export class Game {
         if (resetBtn) {
             resetBtn.addEventListener('click', () => this.restart());
         }
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Escape') {
+                this.clearSelectedSeed();
+            }
+        });
     }
 
     startGameLoop() {
@@ -157,7 +165,12 @@ export class Game {
         if (!terrain || !terrain.landRenderer) return;
         
         const plot = terrain.landRenderer.getPlotAtPosition(mousePos.x, mousePos.y);
-        if (!plot) return;
+        if (!plot) {
+            if (this.selectedSeed) {
+                this.clearSelectedSeed();
+            }
+            return;
+        }
         
         const plots = this.storage.getFarmPlots();
         const targetPlot = plots.find(p => p.id === plot.id);
@@ -167,7 +180,12 @@ export class Game {
         if (targetPlot.isReady) {
             this.harvestCrop(targetPlot.id);
         } else if (!targetPlot.crop) {
-            this.showSeedSelection(plot);
+            if (this.selectedSeed) {
+                this.plantCrop(plot.id, this.selectedSeed);
+                this.clearSelectedSeed();
+            } else {
+                this.showSeedSelection(plot);
+            }
         }
     }
 
@@ -221,7 +239,9 @@ export class Game {
             
             if (hasSeed) {
                 button.onclick = () => {
-                    this.plantCrop(plot.id, key);
+                    this.selectedSeed = key;
+                    const cropInfoData = cropTypes[key];
+                    this.showToast(`🎯 已选择 ${cropInfoData.emoji} ${cropInfoData.name}种子，请点击空地播种`);
                     panel.remove();
                 };
                 
@@ -255,6 +275,17 @@ export class Game {
         setTimeout(() => {
             document.addEventListener('click', closeOnClickOutside);
         }, 0);
+    }
+    
+    clearSelectedSeed() {
+        if (this.selectedSeed) {
+            const cropTypes = this.storage.getCropTypes();
+            const cropInfo = cropTypes[this.selectedSeed];
+            if (cropInfo) {
+                this.showToast(`❌ 已取消选择 ${cropInfo.emoji} ${cropInfo.name}种子`);
+            }
+            this.selectedSeed = null;
+        }
     }
 
     plantCrop(plotId, cropType) {
