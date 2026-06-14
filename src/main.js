@@ -108,6 +108,7 @@ export class Game {
         if (!this.isReady) return;
         
         this.player.update(deltaTime);
+        this.terrain.update(deltaTime);
         this.input.update();
         
         if (this.resourceManager) {

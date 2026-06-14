@@ -45,6 +45,10 @@ export class Terrain {
         this.landRenderer.init();
     }
 
+    update(deltaTime) {
+        this.seaRenderer.update(deltaTime);
+    }
+
     render() {
         this.seaRenderer.render();
         this.beachRenderer.render();
