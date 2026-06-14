@@ -172,6 +172,161 @@
             from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
+
+        .inventory-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+
+        .inventory-header {
+            margin-bottom: 15px;
+        }
+
+        .inventory-header h3 {
+            color: white;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .storage-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .storage-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .storage-fill {
+            height: 100%;
+            background: #22c55e;
+            border-radius: 4px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .storage-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .category-tab.active {
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .inventory-item {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .inventory-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+        }
+
+        .item-emoji {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .item-count {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .inventory-tooltip {
+            position: fixed;
+            background: rgba(30, 30, 50, 0.95);
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            pointer-events: none;
+            min-width: 150px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .tooltip-emoji {
+            font-size: 20px;
+        }
+
+        .tooltip-name {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .tooltip-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .tooltip-info strong {
+            color: #4ade80;
+        }
     </style>
 </head>
 <body>

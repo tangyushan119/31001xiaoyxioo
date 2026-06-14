@@ -4,6 +4,7 @@ import { Player } from './modules/Player.js';
 import { Storage } from './modules/Storage.js';
 import { Input } from './modules/Input.js';
 import { BuildPanel } from './components/BuildPanel.js';
+import { InventoryPanel } from './components/InventoryPanel.js';
 import { ResourceManager } from './modules/ResourceManager.js';
 
 export class Game {
@@ -15,6 +16,7 @@ export class Game {
         this.terrain = null;
         this.player = null;
         this.buildPanel = null;
+        this.inventoryPanel = null;
         this.resourceManager = null;
         
         this.lastTime = 0;
@@ -63,6 +65,7 @@ export class Game {
         this.input.setGame(this);
         
         this.buildPanel = new BuildPanel(this);
+        this.inventoryPanel = new InventoryPanel(this);
         
         this.resourceManager = new ResourceManager(this);
         
@@ -196,6 +199,10 @@ export class Game {
 
     getBuildPanel() {
         return this.buildPanel;
+    }
+
+    getInventoryPanel() {
+        return this.inventoryPanel;
     }
 
     getResourceManager() {

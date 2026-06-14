@@ -8,6 +8,31 @@ export class Storage {
             gold: 0
         };
         
+        this.storageCapacity = 500;
+        
+        this.resourceCategories = {
+            materials: {
+                name: '材料',
+                items: ['wood', 'stone']
+            },
+            supplies: {
+                name: '补给',
+                items: ['food', 'water']
+            },
+            currency: {
+                name: '货币',
+                items: ['gold']
+            }
+        };
+        
+        this.resourceInfo = {
+            wood: { name: '木材', emoji: '🪵', category: 'materials' },
+            stone: { name: '石头', emoji: '🪨', category: 'materials' },
+            food: { name: '食物', emoji: '🍖', category: 'supplies' },
+            water: { name: '淡水', emoji: '💧', category: 'supplies' },
+            gold: { name: '金币', emoji: '💰', category: 'currency' }
+        };
+        
         this.buildings = [];
         this.farms = [];
         this.animals = [];
@@ -109,9 +134,53 @@ export class Storage {
 
     modifyResource(key, amount) {
         if (this.resources.hasOwnProperty(key)) {
-            this.resources[key] = Math.max(0, this.resources[key] + amount);
+            const currentTotal = this.getTotalResourceAmount();
+            const otherResourcesTotal = currentTotal - (this.resources[key] || 0);
+            const maxCanAdd = this.storageCapacity - otherResourcesTotal;
+            const actualAmount = Math.min(amount, maxCanAdd);
+            this.resources[key] = Math.max(0, this.resources[key] + actualAmount);
             this.saveToLocalStorage();
+            return actualAmount;
         }
+        return 0;
+    }
+    
+    getTotalResourceAmount() {
+        return Object.values(this.resources).reduce((sum, value) => sum + value, 0);
+    }
+    
+    getStorageCapacity() {
+        return this.storageCapacity;
+    }
+    
+    setStorageCapacity(capacity) {
+        this.storageCapacity = Math.max(100, capacity);
+        this.saveToLocalStorage();
+    }
+    
+    getResourceCategories() {
+        return { ...this.resourceCategories };
+    }
+    
+    getResourceInfo(key) {
+        return this.resourceInfo[key] || null;
+    }
+    
+    getAllResourceInfo() {
+        return { ...this.resourceInfo };
+    }
+    
+    getResourcesByCategory(categoryKey) {
+        const category = this.resourceCategories[categoryKey];
+        if (!category) return {};
+        
+        const result = {};
+        category.items.forEach(itemKey => {
+            if (this.resources.hasOwnProperty(itemKey)) {
+                result[itemKey] = this.resources[itemKey];
+            }
+        });
+        return result;
     }
 
     setResource(key, value) {

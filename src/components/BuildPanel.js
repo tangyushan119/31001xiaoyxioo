@@ -277,6 +277,10 @@ export class BuildPanel {
                 element.textContent = resources[key] || 0;
             }
         }
+        
+        if (this.game.inventoryPanel) {
+            this.game.inventoryPanel.updateInventory();
+        }
     }
 
     updateBuildingCount() {

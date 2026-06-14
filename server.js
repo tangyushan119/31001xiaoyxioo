@@ -1,9 +1,9 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
 
 const hostname = '0.0.0.0';
-const port = 8082;
+const port = 8888;
 
 const server = http.createServer((req, res) => {
     let filePath = '.' + req.url;
