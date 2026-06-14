@@ -45,11 +45,6 @@ export class Enemy {
             return building && building.health > 0;
         }
         
-        if (this.target.type === 'farm') {
-            const plots = this.game.storage.getFarmPlots();
-            return plots.some(p => p.id === this.target.id && p.crop);
-        }
-        
         return false;
     }
 
@@ -66,23 +61,8 @@ export class Enemy {
             }
         });
         
-        const plots = this.game.storage.getFarmPlots();
-        plots.forEach(plot => {
-            if (plot.crop) {
-                const plotPos = this.getPlotPosition(plot);
-                const dx = plotPos.x - this.x;
-                const dy = plotPos.y - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                targets.push({ type: 'farm', id: plot.id, x: plotPos.x, y: plotPos.y, distance });
-            }
-        });
-        
-        if (targets.length === 0) {
-            return this.getIslandCenterAsTarget();
-        }
-        
         targets.sort((a, b) => a.distance - b.distance);
-        return targets[0];
+        return targets[0] || null;
     }
 
     getPlotPosition(plot) {
@@ -98,7 +78,9 @@ export class Enemy {
     }
 
     moveToTarget(deltaTime) {
-        if (!this.target) return;
+        if (!this.target) {
+            return;
+        }
         
         const dx = this.target.x - this.x;
         const dy = this.target.y - this.y;

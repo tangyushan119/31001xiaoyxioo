@@ -28,11 +28,11 @@ export class EnemyManager {
         const now = Date.now();
         const timeSinceLastInvasion = now - this.lastInvasionTime;
         
-        if (timeSinceLastInvasion >= this.invasionCooldown - this.invasionWarningTime && !this.isWarning) {
+        if (this.enemies.length === 0 && timeSinceLastInvasion >= this.invasionCooldown - this.invasionWarningTime && !this.isWarning) {
             this.startWarning();
         }
         
-        if (timeSinceLastInvasion >= this.invasionCooldown) {
+        if (this.enemies.length === 0 && timeSinceLastInvasion >= this.invasionCooldown) {
             this.triggerInvasion();
         }
     }
@@ -50,7 +50,7 @@ export class EnemyManager {
         this.waveNumber++;
         this.isWarning = false;
         
-        const enemyCount = Math.min(3 + this.waveNumber, 10);
+        const enemyCount = 4;
         const spawnDelay = enemyCount * 500;
         
         this.game.showToast(`💀 第 ${this.waveNumber} 波敌军来袭！(${enemyCount} 个敌人)`);
