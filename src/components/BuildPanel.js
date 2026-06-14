@@ -6,6 +6,20 @@ export class BuildPanel {
         this.draggedItem = null;
         
         this.buildingTypes = {
+            residence: {
+                name: '民居',
+                emoji: '🏠',
+                cost: { wood: 30 },
+                size: 50,
+                goldPerSecond: 1
+            },
+            storageHouse: {
+                name: '储物屋',
+                emoji: '🏠',
+                cost: { wood: 25 },
+                size: 45,
+                storageBonus: 100
+            },
             house: {
                 name: '房屋',
                 emoji: '🏠',
@@ -149,21 +163,39 @@ export class BuildPanel {
             return;
         }
         
-        if (!this.isSpaceAvailable(x, y, buildingConfig.size)) {
+        const alignedPos = this.snapToGrid(x, y, buildingConfig.size);
+        
+        if (!this.isSpaceAvailable(alignedPos.x, alignedPos.y, buildingConfig.size)) {
             this.showError('该位置已有建筑！');
             return;
         }
         
         this.consumeResources(buildingConfig.cost);
-        this.game.storage.addBuilding({
+        
+        const buildingData = {
             id: Date.now(),
             type,
-            x,
-            y,
+            x: alignedPos.x,
+            y: alignedPos.y,
             size: buildingConfig.size,
             emoji: buildingConfig.emoji,
             name: buildingConfig.name
-        });
+        };
+        
+        if (buildingConfig.goldPerSecond) {
+            buildingData.goldPerSecond = buildingConfig.goldPerSecond;
+            buildingData.lastGoldTime = Date.now();
+        }
+        
+        if (buildingConfig.storageBonus) {
+            buildingData.storageBonus = buildingConfig.storageBonus;
+        }
+        
+        this.game.storage.addBuilding(buildingData);
+        
+        if (buildingConfig.storageBonus) {
+            this.game.storage.addStorageCapacity(buildingConfig.storageBonus);
+        }
         
         this.updateBuildingCount();
         this.updateBuildItemStates();
@@ -173,6 +205,28 @@ export class BuildPanel {
         }
         
         this.showSuccess(`建造了 ${buildingConfig.name}！`);
+    }
+    
+    snapToGrid(x, y, size) {
+        const gridSize = 50;
+        const halfSize = size / 2;
+        
+        let alignedX = Math.round(x / gridSize) * gridSize;
+        let alignedY = Math.round(y / gridSize) * gridSize;
+        
+        const terrain = this.game.terrain;
+        const maxIterations = 5;
+        let iteration = 0;
+        
+        while (!terrain.canBuildAt(alignedX, alignedY) && iteration < maxIterations) {
+            const offsetX = (Math.random() - 0.5) * gridSize * 2;
+            const offsetY = (Math.random() - 0.5) * gridSize * 2;
+            alignedX = Math.round((x + offsetX) / gridSize) * gridSize;
+            alignedY = Math.round((y + offsetY) / gridSize) * gridSize;
+            iteration++;
+        }
+        
+        return { x: alignedX, y: alignedY };
     }
 
     hasEnoughResources(cost) {
@@ -271,7 +325,8 @@ export class BuildPanel {
             wood: document.getElementById('wood'),
             stone: document.getElementById('stone'),
             food: document.getElementById('food'),
-            water: document.getElementById('water')
+            water: document.getElementById('water'),
+            gold: document.getElementById('gold')
         };
         
         for (const [key, element] of Object.entries(elements)) {

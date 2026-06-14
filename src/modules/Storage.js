@@ -266,7 +266,16 @@ export class Storage {
     }
 
     removeBuilding(id) {
+        const building = this.buildings.find(b => b.id === id);
+        if (building && building.storageBonus) {
+            this.storageCapacity -= building.storageBonus;
+        }
         this.buildings = this.buildings.filter(b => b.id !== id);
+        this.saveToLocalStorage();
+    }
+    
+    addStorageCapacity(amount) {
+        this.storageCapacity += amount;
         this.saveToLocalStorage();
     }
 

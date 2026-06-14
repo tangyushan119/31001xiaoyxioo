@@ -117,6 +117,7 @@ export class Game {
         
         if (this.storage) {
             this.storage.updateFarmPlots();
+            this.updateBuildings(deltaTime);
         }
         
         this.checkBuildingInteractions();
@@ -155,6 +156,24 @@ export class Game {
 
     onBuildingClick(building) {
         console.log('Clicked on building:', building.name);
+    }
+    
+    updateBuildings(deltaTime) {
+        const buildings = this.storage.getBuildings();
+        const now = Date.now();
+        
+        buildings.forEach(building => {
+            if (building.goldPerSecond && building.lastGoldTime) {
+                const timeSinceLastGold = now - building.lastGoldTime;
+                const goldInterval = 1000;
+                
+                if (timeSinceLastGold >= goldInterval) {
+                    const goldToAdd = Math.floor(timeSinceLastGold / goldInterval) * building.goldPerSecond;
+                    this.storage.modifyResource('gold', goldToAdd);
+                    building.lastGoldTime = now;
+                }
+            }
+        });
     }
 
     checkFarmPlotInteractions() {
