@@ -23,6 +23,10 @@ export class InventoryPanel {
         const header = document.createElement('div');
         header.className = 'inventory-header';
         header.innerHTML = `
+            <div class="gold-display">
+                <span class="gold-emoji">💰</span>
+                <span class="gold-amount">0</span>
+            </div>
             <h3>📦 仓库</h3>
             <div class="storage-bar-container">
                 <div class="storage-bar">
@@ -113,13 +117,19 @@ export class InventoryPanel {
         const total = storage.getTotalResourceAmount();
         const capacity = storage.getStorageCapacity();
         const percentage = (total / capacity) * 100;
+        const goldAmount = storage.getResource('gold');
         
         const storageFill = this.panel.querySelector('.storage-fill');
         const storageText = this.panel.querySelector('.storage-text');
+        const goldAmountElement = this.panel.querySelector('.gold-amount');
         
         storageFill.style.width = percentage + '%';
         storageFill.style.backgroundColor = percentage > 90 ? '#ef4444' : percentage > 70 ? '#f59e0b' : '#22c55e';
         storageText.textContent = `${total}/${capacity}`;
+        
+        if (goldAmountElement) {
+            goldAmountElement.textContent = goldAmount;
+        }
     }
     
     switchCategory(categoryKey) {
@@ -154,6 +164,8 @@ export class InventoryPanel {
         let html = '';
         
         for (const [key, amount] of Object.entries(itemsToRender)) {
+            if (amount <= 0) continue;
+            
             const info = resourceInfo[key];
             if (info) {
                 html += `

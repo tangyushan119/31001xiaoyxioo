@@ -1,10 +1,10 @@
 export class Storage {
     constructor() {
         this.resources = {
-            wood: 100,
-            stone: 50,
-            food: 30,
-            water: 50,
+            wood: 0,
+            stone: 0,
+            food: 0,
+            water: 0,
             gold: 0
         };
         
@@ -111,10 +111,10 @@ export class Storage {
 
     resetToDefaults() {
         this.resources = {
-            wood: 100,
-            stone: 50,
-            food: 30,
-            water: 50,
+            wood: 0,
+            stone: 0,
+            food: 0,
+            water: 0,
             gold: 0
         };
         this.buildings = [];
