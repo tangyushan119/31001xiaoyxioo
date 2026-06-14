@@ -19,15 +19,19 @@ export class InventoryPanel {
         const container = document.createElement('div');
         container.id = 'inventory-panel';
         container.className = 'inventory-panel';
+        container.style.display = 'none';
         
         const header = document.createElement('div');
         header.className = 'inventory-header';
         header.innerHTML = `
+            <div class="inventory-header-top">
+                <h3>📦 仓库</h3>
+                <button class="close-btn" id="inventory-close-btn">✕</button>
+            </div>
             <div class="gold-display">
                 <span class="gold-emoji">💰</span>
                 <span class="gold-amount">0</span>
             </div>
-            <h3>📦 仓库</h3>
             <div class="storage-bar-container">
                 <div class="storage-bar">
                     <div class="storage-fill"></div>
@@ -87,6 +91,33 @@ export class InventoryPanel {
                 this.tooltip.style.top = e.clientY + 15 + 'px';
             }
         });
+        
+        const closeBtn = this.panel.querySelector('#inventory-close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.hide());
+        }
+        
+        const inventoryBtn = document.querySelector('.inventory-btn');
+        if (inventoryBtn) {
+            inventoryBtn.addEventListener('click', () => this.toggle());
+        }
+    }
+    
+    toggle() {
+        if (this.panel.style.display === 'none') {
+            this.show();
+        } else {
+            this.hide();
+        }
+    }
+    
+    show() {
+        this.panel.style.display = 'block';
+        this.updateInventory();
+    }
+    
+    hide() {
+        this.panel.style.display = 'none';
     }
     
     updateInventory() {

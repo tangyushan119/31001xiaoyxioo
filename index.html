@@ -68,6 +68,19 @@
             cursor: not-allowed;
         }
 
+        .build-item.inventory-btn {
+            cursor: pointer;
+            background: rgba(52, 152, 219, 0.3);
+            border-color: rgba(52, 152, 219, 0.5);
+        }
+
+        .build-item.inventory-btn:hover {
+            transform: scale(1.1);
+            border-color: #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
+            background: rgba(52, 152, 219, 0.4);
+        }
+
         #game-canvas {
             flex: 1;
             display: block;
@@ -188,6 +201,33 @@
 
         .inventory-header {
             margin-bottom: 15px;
+        }
+
+        .inventory-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .close-btn {
+            background: rgba(231, 76, 60, 0.8);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(231, 76, 60, 1);
+            transform: scale(1.1);
         }
 
         .gold-display {
@@ -357,6 +397,7 @@
             <div class="build-item" data-type="fishing" draggable="true">🎣</div>
             <div class="build-item" data-type="campfire" draggable="true">🔥</div>
             <div class="build-item" data-type="well" draggable="true">⛏️</div>
+            <div class="build-item inventory-btn" data-action="toggle-inventory">📭</div>
         </div>
         
         <canvas id="game-canvas"></canvas>

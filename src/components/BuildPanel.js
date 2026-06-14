@@ -64,10 +64,12 @@ export class BuildPanel {
         const buildItems = this.panel.querySelectorAll('.build-item');
         
         buildItems.forEach(item => {
-            item.addEventListener('dragstart', (e) => this.onDragStart(e));
-            item.addEventListener('dragend', (e) => this.onDragEnd(e));
-            item.addEventListener('dragenter', (e) => this.onDragEnter(e));
-            item.addEventListener('dragleave', (e) => this.onDragLeave(e));
+            if (!item.classList.contains('inventory-btn')) {
+                item.addEventListener('dragstart', (e) => this.onDragStart(e));
+                item.addEventListener('dragend', (e) => this.onDragEnd(e));
+                item.addEventListener('dragenter', (e) => this.onDragEnter(e));
+                item.addEventListener('dragleave', (e) => this.onDragLeave(e));
+            }
         });
         
         if (this.game && this.game.renderer && this.game.renderer.canvas) {
