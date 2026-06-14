@@ -199,74 +199,120 @@ export class Game {
         panel.id = 'seed-selection-panel';
         panel.style.cssText = `
             position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
             z-index: 100;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 160px;
         `;
         
         const terrain = this.getTerrain();
-        const farmArea = terrain.landRenderer.getFarmArea();
-        panel.style.left = `${farmArea.x + plot.col * (terrain.landRenderer.getPlotSize() + 5) + 60}px`;
-        panel.style.top = `${farmArea.y + plot.row * (terrain.landRenderer.getPlotSize() + 5)}px`;
+        const landRenderer = terrain.landRenderer;
+        const farmArea = landRenderer.getFarmArea();
+        const plotSize = landRenderer.getPlotSize();
+        const plotGap = landRenderer.plotGap || 3;
+        
+        panel.style.left = `${farmArea.x + plot.col * (plotSize + plotGap) + plotSize + 10}px`;
+        panel.style.top = `${farmArea.y + plot.row * (plotSize + plotGap)}px`;
         
         const cropTypes = this.storage.getCropTypes();
         const resources = this.storage.getResources();
+        const seedResources = this.storage.getResourcesByCategory('seeds');
+        
+        let hasSeeds = false;
         
         Object.entries(cropTypes).forEach(([key, cropInfo]) => {
             const seedKey = `${key}Seed`;
-            const hasSeed = resources[seedKey] > 0;
+            const seedCount = resources[seedKey] || 0;
+            const hasSeed = seedCount > 0;
+            
+            if (hasSeed) {
+                hasSeeds = true;
+            }
             
             const button = document.createElement('button');
             button.style.cssText = `
-                padding: 12px 16px;
+                padding: 10px 12px;
                 border: none;
                 border-radius: 8px;
                 cursor: ${hasSeed ? 'pointer' : 'not-allowed'};
-                opacity: ${hasSeed ? 1 : 0.5};
-                background: rgba(255, 255, 255, 0.1);
-                transition: all 0.3s ease;
+                opacity: ${hasSeed ? 1 : 0.4};
+                background: ${hasSeed ? 'rgba(74, 222, 128, 0.15)' : 'rgba(255, 255, 255, 0.05)'};
+                transition: all 0.25s ease;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 4px;
+                gap: 3px;
+                min-width: 70px;
             `;
             
             if (hasSeed) {
                 button.onclick = () => {
-                    this.selectedSeed = key;
-                    const cropInfoData = cropTypes[key];
-                    this.showToast(`🎯 已选择 ${cropInfoData.emoji} ${cropInfoData.name}种子，请点击空地播种`);
+                    const success = this.plantCrop(plot.id, key);
+                    if (success) {
+                        const cropInfoData = cropTypes[key];
+                        this.showToast(`🌱 已种下 ${cropInfoData.emoji} ${cropInfoData.name}！`);
+                    } else {
+                        this.showToast('❌ 无法播种，请检查种子数量');
+                    }
                     panel.remove();
                 };
                 
                 button.onmouseenter = () => {
                     button.style.background = 'rgba(74, 222, 128, 0.3)';
+                    button.style.transform = 'scale(1.05)';
                 };
                 
                 button.onmouseleave = () => {
-                    button.style.background = 'rgba(255, 255, 255, 0.1)';
+                    button.style.background = 'rgba(74, 222, 128, 0.15)';
+                    button.style.transform = 'scale(1)';
                 };
             }
             
             button.innerHTML = `
-                <span style="font-size: 24px;">${cropInfo.emoji}</span>
-                <span style="color: white; font-size: 12px;">${cropInfo.name}</span>
-                <span style="color: rgba(255, 255, 255, 0.7); font-size: 11px;">${resources[seedKey] || 0} 种子</span>
+                <span style="font-size: 20px;">${cropInfo.emoji}</span>
+                <span style="color: white; font-size: 11px; font-weight: 500;">${cropInfo.name}</span>
+                <span style="color: rgba(255, 255, 255, 0.6); font-size: 10px;">${seedCount} 个</span>
             `;
             
             panel.appendChild(button);
         });
         
+        if (!hasSeeds) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.style.cssText = `
+                padding: 16px;
+                text-align: center;
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 12px;
+                grid-column: span 2;
+            `;
+            emptyMsg.textContent = '📭 没有可用的种子';
+            panel.appendChild(emptyMsg);
+        }
+        
         document.body.appendChild(panel);
         
         const closeOnClickOutside = (e) => {
-            if (!panel.contains(e.target)) {
+            const target = e.target;
+            if (!panel.contains(target)) {
+                const canvas = document.getElementById('game-canvas');
+                if (canvas && canvas.contains(target)) {
+                    const terrain = this.getTerrain();
+                    if (terrain && terrain.landRenderer) {
+                        const mousePos = this.input.getCanvasMousePosition();
+                        const clickedPlot = terrain.landRenderer.getPlotAtPosition(mousePos.x, mousePos.y);
+                        if (clickedPlot && clickedPlot.id === plot.id) {
+                            return;
+                        }
+                    }
+                }
                 panel.remove();
                 document.removeEventListener('click', closeOnClickOutside);
             }
@@ -275,6 +321,8 @@ export class Game {
         setTimeout(() => {
             document.addEventListener('click', closeOnClickOutside);
         }, 0);
+        
+        return panel;
     }
     
     clearSelectedSeed() {

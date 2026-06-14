@@ -7,7 +7,8 @@ export class LandRenderer {
         this.landRadius = 0;
         
         this.farmGridSize = 4;
-        this.plotSize = 50;
+        this.plotSize = 25;
+        this.plotGap = 3;
         this.farmOffsetX = 0;
         this.farmOffsetY = 0;
     }
@@ -24,10 +25,10 @@ export class LandRenderer {
     }
 
     calculateFarmPosition() {
-        const totalWidth = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * 5;
-        const totalHeight = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * 5;
+        const totalWidth = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * this.plotGap;
+        const totalHeight = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * this.plotGap;
         this.farmOffsetX = this.centerX - totalWidth / 2;
-        this.farmOffsetY = this.centerY - totalHeight / 2 + 50;
+        this.farmOffsetY = this.centerY - totalHeight / 2;
     }
 
     init() {
@@ -59,8 +60,8 @@ export class LandRenderer {
         
         for (let row = 0; row < this.farmGridSize; row++) {
             for (let col = 0; col < this.farmGridSize; col++) {
-                const x = this.farmOffsetX + col * (this.plotSize + 5);
-                const y = this.farmOffsetY + row * (this.plotSize + 5);
+                const x = this.farmOffsetX + col * (this.plotSize + this.plotGap);
+                const y = this.farmOffsetY + row * (this.plotSize + this.plotGap);
                 
                 this.drawPlot(x, y, row, col);
             }
@@ -77,12 +78,13 @@ export class LandRenderer {
         this.ctx.fillRect(x, y, this.plotSize, this.plotSize);
         
         this.ctx.strokeStyle = '#654321';
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = 1;
         this.ctx.strokeRect(x, y, this.plotSize, this.plotSize);
         
         this.ctx.fillStyle = '#6B8E23';
         this.ctx.globalAlpha = 0.3;
-        this.ctx.fillRect(x + 3, y + 3, this.plotSize - 6, this.plotSize - 6);
+        const innerPadding = 2;
+        this.ctx.fillRect(x + innerPadding, y + innerPadding, this.plotSize - innerPadding * 2, this.plotSize - innerPadding * 2);
         this.ctx.globalAlpha = 1;
         
         if (this.renderer.game && this.renderer.game.storage) {
@@ -106,10 +108,10 @@ export class LandRenderer {
         
         if (plot.isReady) {
             this.ctx.shadowColor = '#FFD700';
-            this.ctx.shadowBlur = 10;
+            this.ctx.shadowBlur = 5;
         }
         
-        this.ctx.font = `${this.plotSize * 0.6}px Arial`;
+        this.ctx.font = `${this.plotSize * 0.7}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         
@@ -123,15 +125,15 @@ export class LandRenderer {
         this.ctx.fillText(emoji, x, y);
         
         if (!plot.isReady && plot.growthProgress > 0) {
-            this.drawGrowthBar(x, y + this.plotSize / 2 + 5, plot.growthProgress);
+            this.drawGrowthBar(x, y + this.plotSize / 2 + 3, plot.growthProgress);
         }
         
         this.ctx.restore();
     }
 
     drawGrowthBar(x, y, progress) {
-        const barWidth = this.plotSize - 10;
-        const barHeight = 4;
+        const barWidth = this.plotSize - 6;
+        const barHeight = 2;
         
         this.ctx.fillStyle = '#333';
         this.ctx.fillRect(x - barWidth / 2, y, barWidth, barHeight);
@@ -159,15 +161,14 @@ export class LandRenderer {
     }
 
     getPlotAtPosition(x, y) {
+        const totalWidth = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * this.plotGap;
+        const totalHeight = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * this.plotGap;
+        
         if (x < this.farmOffsetX || y < this.farmOffsetY) return null;
-        
-        const totalWidth = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * 5;
-        const totalHeight = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * 5;
-        
         if (x > this.farmOffsetX + totalWidth || y > this.farmOffsetY + totalHeight) return null;
         
-        const col = Math.floor((x - this.farmOffsetX) / (this.plotSize + 5));
-        const row = Math.floor((y - this.farmOffsetY) / (this.plotSize + 5));
+        const col = Math.floor((x - this.farmOffsetX) / (this.plotSize + this.plotGap));
+        const row = Math.floor((y - this.farmOffsetY) / (this.plotSize + this.plotGap));
         
         if (row >= 0 && row < this.farmGridSize && col >= 0 && col < this.farmGridSize) {
             return { row, col, id: `${row}-${col}` };
@@ -177,8 +178,8 @@ export class LandRenderer {
     }
 
     getFarmArea() {
-        const totalWidth = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * 5;
-        const totalHeight = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * 5;
+        const totalWidth = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * this.plotGap;
+        const totalHeight = this.farmGridSize * this.plotSize + (this.farmGridSize - 1) * this.plotGap;
         
         return {
             x: this.farmOffsetX,

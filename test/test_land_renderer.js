@@ -10,7 +10,19 @@ function createMockRenderer(width = 800, height = 600) {
         arc: () => {},
         fill: () => {},
         save: () => {},
-        restore: () => {}
+        restore: () => {},
+        fillRect: () => {},
+        strokeStyle: '',
+        lineWidth: 0,
+        strokeRect: () => {},
+        globalAlpha: 1,
+        font: '',
+        textAlign: '',
+        textBaseline: '',
+        fillText: () => {},
+        shadowColor: '',
+        shadowBlur: 0,
+        createLinearGradient: () => ({ addColorStop: () => {} })
     };
     return { canvas, ctx, width, height };
 }

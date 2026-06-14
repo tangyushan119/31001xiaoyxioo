@@ -8,6 +8,14 @@ export class Storage {
             pear: 0,
             treeSeed: 0,
             fruitSeed: 0,
+            wheatSeed: 5,
+            carrotSeed: 5,
+            tomatoSeed: 5,
+            cornSeed: 5,
+            wheatHarvest: 0,
+            carrotHarvest: 0,
+            tomatoHarvest: 0,
+            cornHarvest: 0,
             water: 0,
             gold: 0
         };
