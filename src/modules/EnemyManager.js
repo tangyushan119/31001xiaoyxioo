@@ -48,10 +48,10 @@ export class EnemyManager {
 
     triggerInvasion() {
         this.waveNumber++;
-        this.lastInvasionTime = Date.now();
         this.isWarning = false;
         
         const enemyCount = Math.min(3 + this.waveNumber, 10);
+        const spawnDelay = enemyCount * 500;
         
         this.game.showToast(`💀 第 ${this.waveNumber} 波敌军来袭！(${enemyCount} 个敌人)`);
         
@@ -62,6 +62,10 @@ export class EnemyManager {
         }
         
         this.adjustInvasionCooldown();
+        
+        setTimeout(() => {
+            this.lastInvasionTime = Date.now();
+        }, spawnDelay);
     }
 
     adjustInvasionCooldown() {

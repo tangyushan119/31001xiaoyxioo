@@ -27,12 +27,13 @@ export class Enemy {
     }
 
     findTarget() {
-        if (this.target && !this.isTargetValid()) {
-            this.target = null;
-        }
-        
-        if (!this.target) {
+        if (!this.target || !this.isTargetValid()) {
             this.target = this.getNearestTarget();
+        } else {
+            const newTarget = this.getNearestTarget();
+            if (newTarget && newTarget.distance < this.target.distance) {
+                this.target = newTarget;
+            }
         }
     }
 
