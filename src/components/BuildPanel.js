@@ -73,9 +73,15 @@ export class BuildPanel {
         this.updateBuildingCount();
         this.updateBuildItemStates();
         this.selectedBuilding = null;
+        this.expandedCategory = null;
     }
 
     setupEventListeners() {
+        const categoryBtns = this.panel.querySelectorAll('.category-btn');
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => this.onCategoryClick(e));
+        });
+
         const buildItems = this.panel.querySelectorAll('.build-item');
         
         buildItems.forEach(item => {
@@ -101,6 +107,28 @@ export class BuildPanel {
         const resetBtn = document.getElementById('reset-btn');
         if (resetBtn) {
             resetBtn.addEventListener('click', () => this.onResetClick());
+        }
+    }
+
+    onCategoryClick(e) {
+        const btn = e.target.closest('.category-btn');
+        const category = btn.dataset.category;
+        
+        const allCategoryBtns = this.panel.querySelectorAll('.category-btn');
+        const allSubItems = this.panel.querySelectorAll('.sub-items');
+        
+        allCategoryBtns.forEach(b => b.classList.remove('active'));
+        allSubItems.forEach(s => s.classList.remove('expanded'));
+        
+        if (this.expandedCategory !== category) {
+            btn.classList.add('active');
+            const subItems = this.panel.querySelector(`.sub-items[data-category="${category}"]`);
+            if (subItems) {
+                subItems.classList.add('expanded');
+            }
+            this.expandedCategory = category;
+        } else {
+            this.expandedCategory = null;
         }
     }
 

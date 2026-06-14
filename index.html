@@ -27,14 +27,93 @@
         }
 
         #build-panel {
-            width: 100px;
+            width: 120px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            padding: 15px 10px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .category-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(74, 222, 128, 0.5);
+            transform: translateX(2px);
+        }
+
+        .category-btn.active {
+            background: rgba(74, 222, 128, 0.3);
+            border-color: #4ade80;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
+        }
+
+        .category-icon {
+            font-size: 18px;
+        }
+
+        .category-name {
+            flex: 1;
+            text-align: center;
+            margin: 0 8px;
+        }
+
+        .category-arrow {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .category-btn.active .category-arrow {
+            transform: rotate(90deg);
+        }
+
+        .sub-items {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            padding-left: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sub-items.expanded {
+            display: flex;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .build-item {
@@ -403,16 +482,46 @@
 <body>
     <div id="game-container">
         <div id="build-panel">
-            <div class="build-item" data-type="residence" draggable="true" title="民居 - 自动产金币">🏠</div>
-            <div class="build-item" data-type="storageHouse" draggable="true" title="储物屋 - 扩容资源存储">🏠</div>
-            <div class="build-item" data-type="house" draggable="true">🏠</div>
-            <div class="build-item" data-type="hut" draggable="true">🏚️</div>
-            <div class="build-item" data-type="storage" draggable="true">📦</div>
-            <div class="build-item" data-type="farm" draggable="true">🌾</div>
-            <div class="build-item" data-type="fishing" draggable="true">🎣</div>
-            <div class="build-item" data-type="campfire" draggable="true">🔥</div>
-            <div class="build-item" data-type="well" draggable="true">⛏️</div>
-            <div class="build-item inventory-btn" data-action="toggle-inventory">📭</div>
+            <div class="category-group">
+                <button class="category-btn" data-category="buildings">
+                    <span class="category-icon">🏠</span>
+                    <span class="category-name">建筑</span>
+                    <span class="category-arrow">▶</span>
+                </button>
+                <div class="sub-items" data-category="buildings">
+                    <div class="build-item" data-type="residence" draggable="true" title="民居 - 自动产金币">🏠</div>
+                    <div class="build-item" data-type="house" draggable="true" title="房屋">🏠</div>
+                    <div class="build-item" data-type="hut" draggable="true" title="小屋">�️</div>
+                </div>
+            </div>
+            
+            <div class="category-group">
+                <button class="category-btn" data-category="storage">
+                    <span class="category-icon">📦</span>
+                    <span class="category-name">仓库</span>
+                    <span class="category-arrow">▶</span>
+                </button>
+                <div class="sub-items" data-category="storage">
+                    <div class="build-item" data-type="storage" draggable="true" title="仓库">📦</div>
+                    <div class="build-item" data-type="storageHouse" draggable="true" title="储物屋 - 扩容资源存储">🏠</div>
+                </div>
+            </div>
+            
+            <div class="category-group">
+                <button class="category-btn" data-category="production">
+                    <span class="category-icon">🌾</span>
+                    <span class="category-name">生产</span>
+                    <span class="category-arrow">▶</span>
+                </button>
+                <div class="sub-items" data-category="production">
+                    <div class="build-item" data-type="farm" draggable="true" title="农田">🌾</div>
+                    <div class="build-item" data-type="fishing" draggable="true" title="捕鱼站">🎣</div>
+                    <div class="build-item" data-type="campfire" draggable="true" title="篝火">🔥</div>
+                    <div class="build-item" data-type="well" draggable="true" title="水井">⛏️</div>
+                </div>
+            </div>
+            
+            <div class="build-item inventory-btn" data-action="toggle-inventory" title="打开背包">📭</div>
         </div>
         
         <canvas id="game-canvas"></canvas>
