@@ -11,56 +11,74 @@ export class BuildPanel {
                 emoji: '🏠',
                 cost: { wood: 30 },
                 size: 50,
-                goldPerSecond: 1
+                goldPerSecond: 1,
+                health: 150,
+                maxHealth: 150
             },
             storageHouse: {
                 name: '储物屋',
                 emoji: '🏠',
                 cost: { wood: 25 },
                 size: 45,
-                storageBonus: 100
+                storageBonus: 100,
+                health: 120,
+                maxHealth: 120
             },
             house: {
                 name: '房屋',
                 emoji: '🏠',
                 cost: { wood: 50, stone: 20 },
-                size: 60
+                size: 60,
+                health: 200,
+                maxHealth: 200
             },
             hut: {
                 name: '小屋',
                 emoji: '🏚️',
                 cost: { wood: 30, stone: 10 },
-                size: 45
+                size: 45,
+                health: 100,
+                maxHealth: 100
             },
             storage: {
                 name: '仓库',
                 emoji: '📦',
                 cost: { wood: 40, stone: 30 },
-                size: 50
+                size: 50,
+                health: 250,
+                maxHealth: 250
             },
             farm: {
                 name: '农田',
                 emoji: '🌾',
                 cost: { wood: 20, stone: 5 },
-                size: 55
+                size: 55,
+                health: 80,
+                maxHealth: 80
             },
             fishing: {
                 name: '捕鱼站',
                 emoji: '🎣',
                 cost: { wood: 25, stone: 15 },
-                size: 40
+                size: 40,
+                health: 100,
+                maxHealth: 100
             },
             campfire: {
                 name: '篝火',
                 emoji: '🔥',
                 cost: { wood: 15 },
-                size: 35
+                size: 35,
+                health: 60,
+                maxHealth: 60
             },
             well: {
                 name: '水井',
                 emoji: '⛏️',
                 cost: { wood: 20, stone: 25 },
-                size: 45
+                size: 45,
+                health: 180,
+                maxHealth: 180
             }
         };
         
@@ -252,7 +270,9 @@ export class BuildPanel {
             y: alignedPos.y,
             size: buildingConfig.size,
             emoji: buildingConfig.emoji,
-            name: buildingConfig.name
+            name: buildingConfig.name,
+            health: buildingConfig.health || 100,
+            maxHealth: buildingConfig.maxHealth || 100
         };
         
         if (buildingConfig.goldPerSecond) {

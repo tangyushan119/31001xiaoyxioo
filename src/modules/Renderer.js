@@ -235,6 +235,46 @@ export class Renderer {
         this.ctx.fillText(building.emoji, centerX, centerY);
         
         this.ctx.restore();
+        
+        this.drawBuildingHealthBar(building);
+    }
+    
+    drawBuildingHealthBar(building) {
+        const health = building.health || building.maxHealth || 100;
+        const maxHealth = building.maxHealth || 100;
+        
+        if (health >= maxHealth) return;
+        
+        const barWidth = building.size * 1.2;
+        const barHeight = 5;
+        const barY = building.y - building.size / 2 - 10;
+        
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        this.ctx.fillRect(building.x - barWidth / 2, barY, barWidth, barHeight);
+        
+        const healthPercent = health / maxHealth;
+        const gradient = this.ctx.createLinearGradient(
+            building.x - barWidth / 2, barY,
+            building.x + barWidth / 2, barY
+        );
+        
+        if (healthPercent > 0.6) {
+            gradient.addColorStop(0, '#22c55e');
+            gradient.addColorStop(1, '#4ade80');
+        } else if (healthPercent > 0.3) {
+            gradient.addColorStop(0, '#eab308');
+            gradient.addColorStop(1, '#facc15');
+        } else {
+            gradient.addColorStop(0, '#ef4444');
+            gradient.addColorStop(1, '#f87171');
+        }
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(building.x - barWidth / 2, barY, barWidth * healthPercent, barHeight);
+        
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(building.x - barWidth / 2, barY, barWidth, barHeight);
     }
 
     renderPlayer() {

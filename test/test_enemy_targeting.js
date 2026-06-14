@@ -253,7 +253,7 @@ async function testEnemyMoveToBuildingAndAttack() {
     console.log(`  - 攻击触发: ${damageCalled}`);
     console.log(`  - 攻击伤害: ${damageAmount}`);
     
-    const success = damageCalled && damageAmount === 20;
+    const success = damageCalled && damageAmount === 8;
     console.log(`  - 测试结果: ${success ? '通过 ✓' : '失败 ✗'}`);
     
     return success;

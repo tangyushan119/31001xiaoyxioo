@@ -288,10 +288,10 @@ export class Storage {
         if (!building) return false;
         
         if (!building.health) {
-            building.health = 100;
+            building.health = building.maxHealth || 100;
         }
         
-        building.health -= amount;
+        building.health = Math.max(0, building.health - amount);
         
         if (building.health <= 0) {
             building.health = 0;
@@ -300,7 +300,7 @@ export class Storage {
         }
         
         this.saveToLocalStorage();
-        return { destroyed: false, health: building.health };
+        return { destroyed: false, health: building.health, maxHealth: building.maxHealth };
     }
 
     destroyCrop(plotId) {

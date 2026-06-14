@@ -12,7 +12,11 @@ export class Enemy {
         this.animationFrame = 0;
         this.isAttacking = false;
         this.attackCooldown = 0;
+        this.attackTimer = 0;
         this.target = null;
+        this.attackRange = 45;
+        this.attackDamage = 8;
+        this.attackInterval = 0.5;
         
         this.emoji = '👹';
         this.type = 'goblin';
@@ -21,9 +25,31 @@ export class Enemy {
     update(deltaTime) {
         this.animationFrame += deltaTime * 8;
         this.attackCooldown -= deltaTime;
+        this.attackTimer += deltaTime;
         
         this.findTarget();
         this.moveToTarget(deltaTime);
+        
+        if (this.target && this.isInAttackRange()) {
+            this.sustainAttack(deltaTime);
+        }
+    }
+    
+    isInAttackRange() {
+        if (!this.target) return false;
+        
+        const dx = this.target.x - this.x;
+        const dy = this.target.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        return distance <= this.attackRange;
+    }
+    
+    sustainAttack(deltaTime) {
+        if (this.attackTimer >= this.attackInterval) {
+            this.attackTimer = 0;
+            this.performAttack();
+        }
     }
 
     findTarget() {
@@ -102,8 +128,8 @@ export class Enemy {
         const dy = this.target.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < 30) {
-            this.attack();
+        if (distance <= this.attackRange) {
+            this.updateDirection(dx, dy);
             return;
         }
         
@@ -122,21 +148,28 @@ export class Enemy {
         }
     }
 
-    attack() {
-        if (this.attackCooldown > 0) return;
-        
+    performAttack() {
         this.isAttacking = true;
-        this.attackCooldown = 1;
         
         if (this.target.type === 'building') {
-            this.game.storage.damageBuilding(this.target.id, 20);
-            this.game.showToast(`💥 敌军正在攻击建筑！`);
+            const result = this.game.storage.damageBuilding(this.target.id, this.attackDamage);
+            if (result && result.destroyed) {
+                this.game.showToast(`💥 敌军摧毁了建筑！`);
+                this.target = null;
+            } else {
+                this.game.showToast(`💥 敌军攻击建筑！`);
+            }
         } else if (this.target.type === 'farm') {
             this.game.storage.destroyCrop(this.target.id);
             this.game.showToast(`👣 敌军踩踏了作物！`);
+            this.target = null;
         }
         
-        setTimeout(() => { this.isAttacking = false; }, 300);
+        setTimeout(() => { this.isAttacking = false; }, 200);
+    }
+    
+    attack() {
+        this.performAttack();
     }
 
     takeDamage(amount) {
