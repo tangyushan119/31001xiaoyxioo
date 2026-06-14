@@ -227,27 +227,17 @@ export class Enemy {
     }
 
     drawShadow(ctx) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillStyle = '#1a1a1a';
         ctx.beginPath();
-        ctx.ellipse(this.x, this.y + this.size * 0.4, this.size * 0.35, this.size * 0.12, 0, 0, Math.PI * 2);
+        ctx.ellipse(this.x, this.y + this.size * 0.4, this.size * 0.35, this.size * 0.15, 0, 0, Math.PI * 2);
         ctx.fill();
     }
 
     drawBody(ctx) {
-        ctx.font = `${this.size * 0.9}px Arial`;
+        ctx.font = `${this.size * (this.isAttacking ? 1.1 : 0.9)}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
-        if (this.isAttacking) {
-            ctx.shadowColor = '#ef4444';
-            ctx.shadowBlur = 10;
-            ctx.font = `${this.size * 1.1}px Arial`;
-        }
-        
         ctx.fillText(this.emoji, this.x, this.y);
-        
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
     }
 
     drawHealthBar(ctx) {
