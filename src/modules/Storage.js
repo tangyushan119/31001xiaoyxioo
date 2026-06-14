@@ -1,8 +1,8 @@
 export class Storage {
     constructor() {
         this.resources = {
-            wood: 0,
-            stone: 0,
+            wood: 100,
+            stone: 100,
             ore: 0,
             apple: 0,
             pear: 0,
@@ -17,7 +17,7 @@ export class Storage {
             tomatoHarvest: 0,
             cornHarvest: 0,
             water: 0,
-            gold: 0
+            gold: 100
         };
         
         this.storageCapacity = 500;
@@ -163,15 +163,15 @@ export class Storage {
 
     resetToDefaults() {
         this.resources = {
-            wood: 0,
-            stone: 0,
+            wood: 100,
+            stone: 100,
             ore: 0,
             apple: 0,
             pear: 0,
             treeSeed: 0,
             fruitSeed: 0,
             water: 0,
-            gold: 0,
+            gold: 100,
             wheatSeed: 0,
             carrotSeed: 0,
             tomatoSeed: 0,
