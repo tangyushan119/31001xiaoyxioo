@@ -191,6 +191,7 @@ export class BuildPanel {
         }
         
         const terrainType = this.game.terrain.getTerrainType(x, y);
+        
         if (terrainType === 'water') {
             this.showError('❌ 无法在水中建造！');
             return;
@@ -227,7 +228,7 @@ export class BuildPanel {
         
         const alignedPos = this.snapToGrid(x, y, buildingConfig.size);
         
-        if (!this.game.terrain.canBuildAt(alignedPos.x, alignedPos.y)) {
+        if (!this.isPositionOnLand(alignedPos.x, alignedPos.y)) {
             this.showError('❌ 该位置不是草地！');
             return;
         }
@@ -277,6 +278,19 @@ export class BuildPanel {
         }
         
         this.showSuccess(`✅ 建造了 ${buildingConfig.emoji} ${buildingConfig.name}！`);
+        
+        return true;
+    }
+    
+    isPositionOnLand(x, y) {
+        if (!this.game.terrain) return false;
+        
+        const landRadius = this.game.terrain.getLandRadius();
+        const center = this.game.terrain.getIslandCenter();
+        
+        const distance = Math.sqrt(Math.pow(x - center.x, 2) + Math.pow(y - center.y, 2));
+        
+        return distance < landRadius;
     }
     
     isOverlappingFarmArea(x, y, size) {

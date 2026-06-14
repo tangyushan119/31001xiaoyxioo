@@ -156,7 +156,12 @@ export class Game {
     }
     
     checkSelectedBuildingPlacement() {
-        if (!this.buildPanel || !this.buildPanel.selectedBuilding || !this.input.wasClicked()) return;
+        if (!this.buildPanel || !this.buildPanel.selectedBuilding) return;
+        
+        const hasClick = this.input.wasClicked();
+        const hasRelease = this.input.wasReleased();
+        
+        if (!hasClick && !hasRelease) return;
         
         const mousePos = this.input.getCanvasMousePosition();
         

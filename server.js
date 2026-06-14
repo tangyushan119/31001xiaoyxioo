@@ -17,6 +17,9 @@ const server = http.createServer((req, res) => {
         case '.js':
             contentType = 'text/javascript';
             break;
+        case '.mjs':
+            contentType = 'text/javascript';
+            break;
         case '.css':
             contentType = 'text/css';
             break;
