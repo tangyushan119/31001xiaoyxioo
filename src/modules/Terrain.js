@@ -26,8 +26,11 @@ export class Terrain {
         this.landRadius = Math.floor(this.islandRadius * 0.9);
         this.beachWidth = Math.floor(this.islandRadius * 0.1);
         
-        this.seaRenderer.setSeaRadius(this.islandRadius);
-        this.beachRenderer.setRadiusRange(this.landRadius, this.islandRadius);
+        const extendedBeachWidth = Math.floor(this.beachWidth * 1.5);
+        this.beachOuterRadius = this.islandRadius + extendedBeachWidth;
+        
+        this.seaRenderer.setSeaRadius(this.beachOuterRadius);
+        this.beachRenderer.setRadiusRange(this.landRadius, this.beachOuterRadius);
         this.landRenderer.setLandRadius(this.landRadius);
     }
 
@@ -54,7 +57,7 @@ export class Terrain {
 
     isOnIsland(x, y) {
         const distance = Math.sqrt(Math.pow(x - this.centerX, 2) + Math.pow(y - this.centerY, 2));
-        return distance < this.islandRadius;
+        return distance < this.beachOuterRadius;
     }
 
     isOnBeach(x, y) {
@@ -74,7 +77,11 @@ export class Terrain {
     }
 
     getIslandRadius() {
-        return this.islandRadius;
+        return this.beachOuterRadius;
+    }
+
+    getBeachOuterRadius() {
+        return this.beachOuterRadius;
     }
 
     getLandRadius() {

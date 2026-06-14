@@ -8,7 +8,6 @@ export class Input {
             canvasY: 0,
             down: false,
             clicked: false,
-            clickedRight: false,
             released: false
         };
         
@@ -72,9 +71,6 @@ export class Input {
         this.mouse.down = true;
         if (e.button === 0) {
             this.mouse.clicked = true;
-        } else if (e.button === 2) {
-            this.mouse.clickedRight = true;
-            e.preventDefault();
         }
     }
 
@@ -200,12 +196,6 @@ export class Input {
         return clicked;
     }
     
-    wasRightClicked() {
-        const clicked = this.mouse.clickedRight;
-        this.mouse.clickedRight = false;
-        return clicked;
-    }
-
     wasReleased() {
         const released = this.mouse.released;
         this.mouse.released = false;
@@ -224,7 +214,6 @@ export class Input {
             canvasY: 0,
             down: false,
             clicked: false,
-            clickedRight: false,
             released: false
         };
         this.draggedBuilding = null;
