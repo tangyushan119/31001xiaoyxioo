@@ -106,7 +106,12 @@ export class Game {
             this.resourceManager.update(deltaTime);
         }
         
+        if (this.storage) {
+            this.storage.updateFarmPlots();
+        }
+        
         this.checkBuildingInteractions();
+        this.checkFarmPlotInteractions();
     }
 
     render() {
@@ -141,6 +146,163 @@ export class Game {
 
     onBuildingClick(building) {
         console.log('Clicked on building:', building.name);
+    }
+
+    checkFarmPlotInteractions() {
+        if (!this.input.wasClicked()) return;
+        
+        const mousePos = this.input.getCanvasMousePosition();
+        const terrain = this.getTerrain();
+        
+        if (!terrain || !terrain.landRenderer) return;
+        
+        const plot = terrain.landRenderer.getPlotAtPosition(mousePos.x, mousePos.y);
+        if (!plot) return;
+        
+        const plots = this.storage.getFarmPlots();
+        const targetPlot = plots.find(p => p.id === plot.id);
+        
+        if (!targetPlot) return;
+        
+        if (targetPlot.isReady) {
+            this.harvestCrop(targetPlot.id);
+        } else if (!targetPlot.crop) {
+            this.showSeedSelection(plot);
+        }
+    }
+
+    showSeedSelection(plot) {
+        const existingPanel = document.getElementById('seed-selection-panel');
+        if (existingPanel) {
+            existingPanel.remove();
+        }
+        
+        const panel = document.createElement('div');
+        panel.id = 'seed-selection-panel';
+        panel.style.cssText = `
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        `;
+        
+        const terrain = this.getTerrain();
+        const farmArea = terrain.landRenderer.getFarmArea();
+        panel.style.left = `${farmArea.x + plot.col * (terrain.landRenderer.getPlotSize() + 5) + 60}px`;
+        panel.style.top = `${farmArea.y + plot.row * (terrain.landRenderer.getPlotSize() + 5)}px`;
+        
+        const cropTypes = this.storage.getCropTypes();
+        const resources = this.storage.getResources();
+        
+        Object.entries(cropTypes).forEach(([key, cropInfo]) => {
+            const seedKey = `${key}Seed`;
+            const hasSeed = resources[seedKey] > 0;
+            
+            const button = document.createElement('button');
+            button.style.cssText = `
+                padding: 12px 16px;
+                border: none;
+                border-radius: 8px;
+                cursor: ${hasSeed ? 'pointer' : 'not-allowed'};
+                opacity: ${hasSeed ? 1 : 0.5};
+                background: rgba(255, 255, 255, 0.1);
+                transition: all 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+            `;
+            
+            if (hasSeed) {
+                button.onclick = () => {
+                    this.plantCrop(plot.id, key);
+                    panel.remove();
+                };
+                
+                button.onmouseenter = () => {
+                    button.style.background = 'rgba(74, 222, 128, 0.3)';
+                };
+                
+                button.onmouseleave = () => {
+                    button.style.background = 'rgba(255, 255, 255, 0.1)';
+                };
+            }
+            
+            button.innerHTML = `
+                <span style="font-size: 24px;">${cropInfo.emoji}</span>
+                <span style="color: white; font-size: 12px;">${cropInfo.name}</span>
+                <span style="color: rgba(255, 255, 255, 0.7); font-size: 11px;">${resources[seedKey] || 0} 种子</span>
+            `;
+            
+            panel.appendChild(button);
+        });
+        
+        document.body.appendChild(panel);
+        
+        const closeOnClickOutside = (e) => {
+            if (!panel.contains(e.target)) {
+                panel.remove();
+                document.removeEventListener('click', closeOnClickOutside);
+            }
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', closeOnClickOutside);
+        }, 0);
+    }
+
+    plantCrop(plotId, cropType) {
+        const success = this.storage.plantCrop(plotId, cropType);
+        
+        if (success) {
+            const cropTypes = this.storage.getCropTypes();
+            const cropInfo = cropTypes[cropType];
+            this.showToast(`🌱 已种下 ${cropInfo.name}！`);
+        } else {
+            this.showToast('❌ 无法播种，请检查种子数量');
+        }
+    }
+
+    harvestCrop(plotId) {
+        const plots = this.storage.getFarmPlots();
+        const plot = plots.find(p => p.id === plotId);
+        
+        if (!plot || !plot.isReady) return;
+        
+        const cropTypes = this.storage.getCropTypes();
+        const cropInfo = cropTypes[plot.crop];
+        
+        const success = this.storage.harvestCrop(plotId);
+        
+        if (success) {
+            this.showToast(`✅ 收获了 ${cropInfo.yield} 个 ${cropInfo.name}！`);
+        }
+    }
+
+    showToast(message) {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.background = 'rgba(52, 152, 219, 0.9)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 2500);
     }
 
     stop() {

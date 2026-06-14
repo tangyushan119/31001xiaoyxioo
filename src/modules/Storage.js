@@ -25,7 +25,11 @@ export class Storage {
             },
             seeds: {
                 name: '种子',
-                items: ['treeSeed', 'fruitSeed']
+                items: ['treeSeed', 'fruitSeed', 'wheatSeed', 'carrotSeed', 'tomatoSeed', 'cornSeed']
+            },
+            harvests: {
+                name: '收获',
+                items: ['wheatHarvest', 'carrotHarvest', 'tomatoHarvest', 'cornHarvest']
             },
             supplies: {
                 name: '补给',
@@ -45,6 +49,14 @@ export class Storage {
             pear: { name: '梨子', emoji: '🍐', category: 'fruits' },
             treeSeed: { name: '树木种子', emoji: '🌱', category: 'seeds' },
             fruitSeed: { name: '水果种子', emoji: '🍑', category: 'seeds' },
+            wheatSeed: { name: '小麦种子', emoji: '🌾', category: 'seeds' },
+            carrotSeed: { name: '胡萝卜种子', emoji: '🥕', category: 'seeds' },
+            tomatoSeed: { name: '番茄种子', emoji: '🍅', category: 'seeds' },
+            cornSeed: { name: '玉米种子', emoji: '🌽', category: 'seeds' },
+            wheatHarvest: { name: '小麦', emoji: '🌾', category: 'harvests' },
+            carrotHarvest: { name: '胡萝卜', emoji: '🥕', category: 'harvests' },
+            tomatoHarvest: { name: '番茄', emoji: '🍅', category: 'harvests' },
+            cornHarvest: { name: '玉米', emoji: '🌽', category: 'harvests' },
             water: { name: '淡水', emoji: '💧', category: 'supplies' },
             gold: { name: '金币', emoji: '💰', category: 'currency' }
         };
@@ -53,9 +65,19 @@ export class Storage {
         this.farms = [];
         this.animals = [];
         this.plantations = [];
+        this.farmPlots = [];
         this.playerPosition = null;
         
         this.autoSaveInterval = null;
+        
+        this.cropTypes = {
+            wheat: { name: '小麦', emoji: '🌾', growthTime: 10000, yield: 3, seedCost: { wheatSeed: 1 } },
+            carrot: { name: '胡萝卜', emoji: '🥕', growthTime: 8000, yield: 2, seedCost: { carrotSeed: 1 } },
+            tomato: { name: '番茄', emoji: '🍅', growthTime: 12000, yield: 4, seedCost: { tomatoSeed: 1 } },
+            corn: { name: '玉米', emoji: '🌽', growthTime: 15000, yield: 3, seedCost: { cornSeed: 1 } }
+        };
+        
+        this.initFarmPlots();
         
         this.init();
     }
@@ -79,6 +101,7 @@ export class Storage {
                 this.farms = data.farms || [];
                 this.animals = data.animals || [];
                 this.plantations = data.plantations || [];
+                this.farmPlots = data.farmPlots || [];
                 this.playerPosition = data.playerPosition || null;
             } catch (e) {
                 console.warn('Failed to load saved data:', e);
@@ -94,6 +117,7 @@ export class Storage {
             farms: this.farms,
             animals: this.animals,
             plantations: this.plantations,
+            farmPlots: this.farmPlots,
             playerPosition: this.playerPosition
         };
         
@@ -135,13 +159,23 @@ export class Storage {
             treeSeed: 0,
             fruitSeed: 0,
             water: 0,
-            gold: 0
+            gold: 0,
+            wheatSeed: 10,
+            carrotSeed: 10,
+            tomatoSeed: 10,
+            cornSeed: 10,
+            wheatHarvest: 0,
+            carrotHarvest: 0,
+            tomatoHarvest: 0,
+            cornHarvest: 0
         };
         this.buildings = [];
         this.farms = [];
         this.animals = [];
         this.plantations = [];
+        this.farmPlots = [];
         this.playerPosition = null;
+        this.initFarmPlots();
     }
 
     getResources() {
@@ -291,6 +325,93 @@ export class Storage {
             this.plantations[index] = { ...this.plantations[index], ...updates };
             this.saveToLocalStorage();
         }
+    }
+
+    initFarmPlots() {
+        if (this.farmPlots.length === 0) {
+            const gridSize = 4;
+            const plots = [];
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    plots.push({
+                        id: `${row}-${col}`,
+                        row,
+                        col,
+                        crop: null,
+                        plantedAt: null,
+                        isReady: false,
+                        growthProgress: 0
+                    });
+                }
+            }
+            this.farmPlots = plots;
+        }
+    }
+
+    getFarmPlots() {
+        return [...this.farmPlots];
+    }
+
+    getCropTypes() {
+        return { ...this.cropTypes };
+    }
+
+    plantCrop(plotId, cropType) {
+        const plot = this.farmPlots.find(p => p.id === plotId);
+        if (!plot || plot.crop) return false;
+        
+        const cropInfo = this.cropTypes[cropType];
+        if (!cropInfo) return false;
+        
+        if (!this.hasEnoughResources(cropInfo.seedCost)) return false;
+        
+        this.consumeResources(cropInfo.seedCost);
+        
+        plot.crop = cropType;
+        plot.plantedAt = Date.now();
+        plot.isReady = false;
+        plot.growthProgress = 0;
+        
+        this.saveToLocalStorage();
+        return true;
+    }
+
+    harvestCrop(plotId) {
+        const plot = this.farmPlots.find(p => p.id === plotId);
+        if (!plot || !plot.crop || !plot.isReady) return false;
+        
+        const cropInfo = this.cropTypes[plot.crop];
+        const harvestKey = `${plot.crop}Harvest`;
+        
+        if (!this.resources.hasOwnProperty(harvestKey)) {
+            this.resources[harvestKey] = 0;
+        }
+        
+        this.modifyResource(harvestKey, cropInfo.yield);
+        
+        plot.crop = null;
+        plot.plantedAt = null;
+        plot.isReady = false;
+        plot.growthProgress = 0;
+        
+        this.saveToLocalStorage();
+        return true;
+    }
+
+    updateFarmPlots() {
+        const now = Date.now();
+        this.farmPlots.forEach(plot => {
+            if (plot.crop && !plot.isReady) {
+                const cropInfo = this.cropTypes[plot.crop];
+                const elapsed = now - plot.plantedAt;
+                plot.growthProgress = Math.min(100, (elapsed / cropInfo.growthTime) * 100);
+                
+                if (elapsed >= cropInfo.growthTime) {
+                    plot.isReady = true;
+                    plot.growthProgress = 100;
+                }
+            }
+        });
     }
 
     getPlayerPosition() {
