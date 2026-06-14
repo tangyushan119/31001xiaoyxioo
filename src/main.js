@@ -160,11 +160,32 @@ export class Game {
         
         const mousePos = this.input.getCanvasMousePosition();
         
-        if (this.terrain.canBuildAt(mousePos.x, mousePos.y)) {
-            const buildingType = this.buildPanel.selectedBuilding;
-            this.buildPanel.tryPlaceBuilding(buildingType, mousePos.x, mousePos.y);
-            this.buildPanel.clearSelectedBuilding();
+        const buildingType = this.buildPanel.selectedBuilding;
+        const buildingConfig = this.buildPanel.buildingTypes[buildingType];
+        
+        if (!buildingConfig) return;
+        
+        const terrainType = this.terrain.getTerrainType(mousePos.x, mousePos.y);
+        
+        if (terrainType !== 'land') {
+            return;
         }
+        
+        const resources = this.storage.getResources();
+        let canAfford = true;
+        for (const [key, value] of Object.entries(buildingConfig.cost)) {
+            if ((resources[key] || 0) < value) {
+                canAfford = false;
+                break;
+            }
+        }
+        
+        if (!canAfford) {
+            return;
+        }
+        
+        this.buildPanel.tryPlaceBuilding(buildingType, mousePos.x, mousePos.y);
+        this.buildPanel.clearSelectedBuilding();
     }
 
     onBuildingClick(building) {

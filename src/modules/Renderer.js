@@ -134,8 +134,54 @@ export class Renderer {
         this.clear();
         this.renderTerrain();
         this.renderBuildings();
+        this.renderBuildingPreview();
         this.renderPlayer();
         this.renderGrid();
+    }
+    
+    renderBuildingPreview() {
+        if (!this.game || !this.game.buildPanel) return;
+        
+        const selectedBuilding = this.game.buildPanel.selectedBuilding;
+        const previewPos = this.game.buildPanel.previewBuildingPosition;
+        
+        if (!selectedBuilding || !previewPos) return;
+        
+        const buildingConfig = this.game.buildPanel.buildingTypes[selectedBuilding];
+        if (!buildingConfig) return;
+        
+        const canBuild = this.game.terrain.canBuildAt(previewPos.x, previewPos.y) &&
+                        this.game.buildPanel.isSpaceAvailable(previewPos.x, previewPos.y, buildingConfig.size) &&
+                        !this.game.buildPanel.isOverlappingFarmArea(previewPos.x, previewPos.y, buildingConfig.size);
+        
+        this.ctx.save();
+        
+        this.ctx.globalAlpha = canBuild ? 0.7 : 0.4;
+        
+        const size = buildingConfig.size;
+        const halfSize = size / 2;
+        
+        this.ctx.strokeStyle = canBuild ? '#4ade80' : '#ef4444';
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([5, 5]);
+        this.ctx.strokeRect(previewPos.x - halfSize, previewPos.y - halfSize, size, size);
+        
+        this.ctx.setLineDash([]);
+        
+        if (canBuild) {
+            this.ctx.shadowColor = '#4ade80';
+            this.ctx.shadowBlur = 10;
+        } else {
+            this.ctx.shadowColor = '#ef4444';
+            this.ctx.shadowBlur = 10;
+        }
+        
+        this.ctx.font = `${size * 0.8}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(buildingConfig.emoji, previewPos.x, previewPos.y);
+        
+        this.ctx.restore();
     }
 
     renderLoadingScreen() {

@@ -145,6 +145,25 @@
         .build-item.disabled {
             opacity: 0.4;
             cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .build-item.can-afford {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+            animation: afford-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes afford-glow {
+            0%, 100% { 
+                box-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+                border-color: rgba(74, 222, 128, 0.5);
+            }
+            50% { 
+                box-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+                border-color: rgba(74, 222, 128, 0.8);
+            }
         }
 
         .build-item.selected {

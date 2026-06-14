@@ -283,6 +283,7 @@ export class ResourceManager {
         this.addCollectionAnimation(resource.x, resource.y, resource.emoji, collectedResourceKey);
         
         this.game.getBuildPanel().updateResourceDisplay();
+        this.game.getBuildPanel().updateBuildItemStates();
         
         this.showCollectionToast(resource, collectedResourceKey, collectedAmount);
     }

@@ -455,8 +455,12 @@ export class BuildPanel {
                 
                 if (canAfford) {
                     item.classList.remove('disabled');
+                    item.classList.add('can-afford');
+                    item.style.cursor = 'pointer';
                 } else {
                     item.classList.add('disabled');
+                    item.classList.remove('can-afford');
+                    item.style.cursor = 'not-allowed';
                 }
             }
         });
@@ -531,9 +535,16 @@ export class BuildPanel {
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            if (this.game.terrain.canBuildAt(x, y)) {
+            const isOnCanvas = x >= 0 && x <= this.game.renderer.width && 
+                               y >= 0 && y <= this.game.renderer.height;
+            
+            if (isOnCanvas && this.game.terrain.canBuildAt(x, y)) {
                 const alignedPos = this.snapToGrid(x, y, this.buildingTypes[this.selectedBuilding].size);
                 this.previewBuildingPosition = alignedPos;
+            } else if (isOnCanvas) {
+                this.previewBuildingPosition = { x, y };
+            } else {
+                this.previewBuildingPosition = null;
             }
         }
     }
