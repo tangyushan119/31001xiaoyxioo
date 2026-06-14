@@ -6,6 +6,7 @@ import { Input } from './modules/Input.js';
 import { BuildPanel } from './components/BuildPanel.js';
 import { InventoryPanel } from './components/InventoryPanel.js';
 import { ResourceManager } from './modules/ResourceManager.js';
+import { EnemyManager } from './modules/EnemyManager.js';
 
 export class Game {
     constructor() {
@@ -18,6 +19,7 @@ export class Game {
         this.buildPanel = null;
         this.inventoryPanel = null;
         this.resourceManager = null;
+        this.enemyManager = null;
         
         this.lastTime = 0;
         this.isRunning = false;
@@ -77,6 +79,8 @@ export class Game {
         
         this.resourceManager = new ResourceManager(this);
         
+        this.enemyManager = new EnemyManager(this);
+        
         this.renderer.setGame(this);
         
         this.buildPanel.updateResourceDisplay();
@@ -113,6 +117,10 @@ export class Game {
         
         if (this.resourceManager) {
             this.resourceManager.update(deltaTime);
+        }
+        
+        if (this.enemyManager) {
+            this.enemyManager.updateEnemies(deltaTime);
         }
         
         if (this.storage) {
@@ -538,6 +546,9 @@ export class Game {
         if (this.storage) {
             this.storage.stopAutoSave();
         }
+        if (this.enemyManager) {
+            this.enemyManager.stop();
+        }
     }
 
     restart() {
@@ -545,6 +556,9 @@ export class Game {
         this.player.init();
         if (this.resourceManager) {
             this.resourceManager = new ResourceManager(this);
+        }
+        if (this.enemyManager) {
+            this.enemyManager.reset();
         }
         this.buildPanel.updateResourceDisplay();
         this.buildPanel.updateBuildingCount();
@@ -597,6 +611,10 @@ export class Game {
 
     getResourceManager() {
         return this.resourceManager;
+    }
+
+    getEnemyManager() {
+        return this.enemyManager;
     }
 }
 

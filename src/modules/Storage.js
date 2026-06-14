@@ -283,6 +283,39 @@ export class Storage {
         return this.buildings.find(b => b.id === id);
     }
 
+    damageBuilding(id, amount) {
+        const building = this.buildings.find(b => b.id === id);
+        if (!building) return false;
+        
+        if (!building.health) {
+            building.health = 100;
+        }
+        
+        building.health -= amount;
+        
+        if (building.health <= 0) {
+            building.health = 0;
+            this.removeBuilding(id);
+            return { destroyed: true, building };
+        }
+        
+        this.saveToLocalStorage();
+        return { destroyed: false, health: building.health };
+    }
+
+    destroyCrop(plotId) {
+        const plot = this.farmPlots.find(p => p.id === plotId);
+        if (!plot || !plot.crop) return false;
+        
+        plot.crop = null;
+        plot.plantedAt = null;
+        plot.isReady = false;
+        plot.growthProgress = 0;
+        
+        this.saveToLocalStorage();
+        return true;
+    }
+
     getFarms() {
         return [...this.farms];
     }

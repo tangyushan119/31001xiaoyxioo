@@ -135,8 +135,15 @@ export class Renderer {
         this.renderTerrain();
         this.renderBuildings();
         this.renderBuildingPreview();
+        this.renderEnemies();
         this.renderPlayer();
         this.renderGrid();
+    }
+    
+    renderEnemies() {
+        if (!this.game || !this.game.enemyManager) return;
+        
+        this.game.enemyManager.renderEnemies(this.ctx);
     }
     
     renderBuildingPreview() {
