@@ -82,11 +82,20 @@ export class ResourceManager {
             const x = center.x + Math.cos(angle) * distance;
             const y = center.y + Math.sin(angle) * distance;
             
-            if (terrain.isOnLand(x, y)) {
+            if (terrain.isOnLand(x, y) && !this.isInFarmArea(x, y)) {
                 const type = this.getRandomResourceType();
                 this.spawnResource(x, y, type);
             }
         }
+    }
+    
+    isInFarmArea(x, y) {
+        const terrain = this.game.getTerrain();
+        if (!terrain || !terrain.landRenderer) return false;
+        
+        const farmArea = terrain.landRenderer.getFarmArea();
+        return x >= farmArea.x && x <= farmArea.x + farmArea.width &&
+               y >= farmArea.y && y <= farmArea.y + farmArea.height;
     }
     
     getRandomResourceType() {
@@ -162,7 +171,7 @@ export class ResourceManager {
                 const x = center.x + Math.cos(angle) * distance;
                 const y = center.y + Math.sin(angle) * distance;
                 
-                if (terrain.isOnLand(x, y)) {
+                if (terrain.isOnLand(x, y) && !this.isInFarmArea(x, y)) {
                     const existingResource = this.resources.find(r => !r.isDepleted && 
                         Math.abs(r.x - x) < 50 && Math.abs(r.y - y) < 50);
                     
@@ -195,6 +204,12 @@ export class ResourceManager {
         const input = this.game.getInput();
         
         if (!player || !input) return;
+        
+        const mousePos = input.getCanvasMousePosition();
+        
+        if (this.isInFarmArea(mousePos.x, mousePos.y)) {
+            return;
+        }
         
         const playerPos = player.getPosition();
         

@@ -108,6 +108,10 @@ export class Storage {
                 this.resetToDefaults();
             }
         }
+        
+        if (this.farmPlots.length === 0) {
+            this.initFarmPlots();
+        }
     }
 
     saveToLocalStorage() {
