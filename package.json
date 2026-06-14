@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "node test/test_land_renderer.js",
+    "test:farming": "node test/test_farming.js",
+    "test:all": "node test/test_land_renderer.js && node test/test_farming.js",
     "start": "node server.js"
   }
 }
