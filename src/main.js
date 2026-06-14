@@ -122,6 +122,7 @@ export class Game {
         
         this.checkBuildingInteractions();
         this.checkFarmPlotInteractions();
+        this.checkSelectedBuildingPlacement();
     }
 
     render() {
@@ -152,6 +153,18 @@ export class Game {
                 this.onBuildingClick(building);
             }
         });
+    }
+    
+    checkSelectedBuildingPlacement() {
+        if (!this.buildPanel || !this.buildPanel.selectedBuilding || !this.input.wasClicked()) return;
+        
+        const mousePos = this.input.getCanvasMousePosition();
+        
+        if (this.terrain.canBuildAt(mousePos.x, mousePos.y)) {
+            const buildingType = this.buildPanel.selectedBuilding;
+            this.buildPanel.tryPlaceBuilding(buildingType, mousePos.x, mousePos.y);
+            this.buildPanel.clearSelectedBuilding();
+        }
     }
 
     onBuildingClick(building) {

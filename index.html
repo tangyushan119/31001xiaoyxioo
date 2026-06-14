@@ -68,6 +68,18 @@
             cursor: not-allowed;
         }
 
+        .build-item.selected {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.3);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            animation: selected-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes selected-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
+        }
+
         .build-item.inventory-btn {
             cursor: pointer;
             background: rgba(52, 152, 219, 0.3);

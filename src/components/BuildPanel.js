@@ -72,6 +72,7 @@ export class BuildPanel {
         this.updateResourceDisplay();
         this.updateBuildingCount();
         this.updateBuildItemStates();
+        this.selectedBuilding = null;
     }
 
     setupEventListeners() {
@@ -83,6 +84,9 @@ export class BuildPanel {
                 item.addEventListener('dragend', (e) => this.onDragEnd(e));
                 item.addEventListener('dragenter', (e) => this.onDragEnter(e));
                 item.addEventListener('dragleave', (e) => this.onDragLeave(e));
+                item.addEventListener('click', (e) => this.onBuildItemClick(e));
+                item.addEventListener('mouseenter', (e) => this.onBuildItemHover(e));
+                item.addEventListener('mouseleave', (e) => this.onBuildItemLeave(e));
             }
         });
         
@@ -91,6 +95,8 @@ export class BuildPanel {
             this.game.renderer.canvas.addEventListener('dragleave', (e) => this.onDragLeaveCanvas(e));
             this.game.renderer.canvas.addEventListener('drop', (e) => this.onDrop(e));
         }
+        
+        document.addEventListener('mousemove', (e) => this.onMouseMove(e));
         
         const resetBtn = document.getElementById('reset-btn');
         if (resetBtn) {
@@ -383,5 +389,168 @@ export class BuildPanel {
 
     getBuildingTypes() {
         return this.buildingTypes;
+    }
+    
+    onBuildItemClick(e) {
+        const item = e.target;
+        const buildingType = item.dataset.type;
+        const config = this.buildingTypes[buildingType];
+        
+        if (!config) return;
+        
+        if (!this.hasEnoughResources(config.cost)) {
+            this.showError(`资源不足！需要 ${this.formatCost(config.cost)}`);
+            return;
+        }
+        
+        this.selectBuilding(buildingType);
+    }
+    
+    onBuildItemHover(e) {
+        const item = e.target;
+        const buildingType = item.dataset.type;
+        const config = this.buildingTypes[buildingType];
+        
+        if (config) {
+            this.showBuildingTooltip(item, config);
+        }
+    }
+    
+    onBuildItemLeave(e) {
+        this.hideBuildingTooltip();
+    }
+    
+    onMouseMove(e) {
+        if (this.draggedItem && this.draggedItem.dataset.type) {
+            this.updateDragPreview(e);
+        }
+        
+        if (this.selectedBuilding && this.game.renderer && this.game.renderer.canvas) {
+            const rect = this.game.renderer.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            if (this.game.terrain.canBuildAt(x, y)) {
+                const alignedPos = this.snapToGrid(x, y, this.buildingTypes[this.selectedBuilding].size);
+                this.previewBuildingPosition = alignedPos;
+            }
+        }
+    }
+    
+    selectBuilding(type) {
+        this.selectedBuilding = type;
+        this.showSuccess(`已选择 ${this.buildingTypes[type].name}，点击草地放置`);
+        
+        this.highlightSelectedItem(type);
+    }
+    
+    highlightSelectedItem(type) {
+        const buildItems = this.panel.querySelectorAll('.build-item');
+        
+        buildItems.forEach(item => {
+            if (item.dataset.type === type) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+    
+    clearSelectedBuilding() {
+        this.selectedBuilding = null;
+        this.previewBuildingPosition = null;
+        
+        const buildItems = this.panel.querySelectorAll('.build-item');
+        buildItems.forEach(item => {
+            item.classList.remove('selected');
+        });
+    }
+    
+    showBuildingTooltip(item, config) {
+        let tooltip = document.getElementById('building-tooltip');
+        if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.id = 'building-tooltip';
+            tooltip.style.cssText = `
+                position: fixed;
+                background: rgba(30, 41, 59, 0.95);
+                backdrop-filter: blur(12px);
+                border-radius: 10px;
+                padding: 12px 16px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                z-index: 2000;
+                pointer-events: none;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                min-width: 180px;
+            `;
+            document.body.appendChild(tooltip);
+        }
+        
+        const resources = this.game.storage.getResources();
+        let costHtml = '';
+        let canAfford = true;
+        
+        for (const [key, value] of Object.entries(config.cost)) {
+            const resourceInfo = this.game.storage.getResourceInfo(key);
+            const emoji = resourceInfo ? resourceInfo.emoji : '❓';
+            const current = resources[key] || 0;
+            const color = current >= value ? '#4ade80' : '#ef4444';
+            canAfford = canAfford && (current >= value);
+            costHtml += `<div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
+                <span>${emoji}</span>
+                <span style="color: rgba(255,255,255,0.7); font-size: 12px;">${resourceInfo?.name || key}</span>
+                <span style="color: ${color}; font-weight: 600; margin-left: auto;">${current}/${value}</span>
+            </div>`;
+        }
+        
+        let bonusInfo = '';
+        if (config.goldPerSecond) {
+            bonusInfo += `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); color: #fbbf24; font-size: 12px;">💰 +${config.goldPerSecond}/秒</div>`;
+        }
+        if (config.storageBonus) {
+            bonusInfo += `<div style="margin-top: 4px; color: #3b82f6; font-size: 12px;">📦 +${config.storageBonus} 存储</div>`;
+        }
+        
+        tooltip.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <span style="font-size: 28px;">${config.emoji}</span>
+                <div>
+                    <div style="color: white; font-weight: 600; font-size: 14px;">${config.name}</div>
+                    <div style="color: rgba(255,255,255,0.5); font-size: 11px;">尺寸: ${config.size}px</div>
+                </div>
+            </div>
+            <div style="color: rgba(255,255,255,0.6); font-size: 11px; margin-bottom: 8px;">建造消耗:</div>
+            ${costHtml}
+            ${bonusInfo}
+            <div style="margin-top: 8px; color: rgba(255,255,255,0.4); font-size: 10px;">拖拽或点击后放置</div>
+        `;
+        
+        this.updateTooltipPosition();
+    }
+    
+    hideBuildingTooltip() {
+        const tooltip = document.getElementById('building-tooltip');
+        if (tooltip) {
+            tooltip.remove();
+        }
+    }
+    
+    updateTooltipPosition() {
+        const tooltip = document.getElementById('building-tooltip');
+        if (!tooltip) return;
+        
+        const panelRect = this.panel.getBoundingClientRect();
+        tooltip.style.left = (panelRect.right + 15) + 'px';
+        tooltip.style.top = (panelRect.top + 20) + 'px';
+    }
+    
+    formatCost(cost) {
+        const parts = [];
+        for (const [key, value] of Object.entries(cost)) {
+            const resourceInfo = this.game.storage.getResourceInfo(key);
+            const emoji = resourceInfo ? resourceInfo.emoji : '❓';
+            parts.push(`${emoji} ${value}`);
+        }
+        return parts.join(', ');
     }
 }
