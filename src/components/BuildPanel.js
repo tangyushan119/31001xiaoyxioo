@@ -184,23 +184,61 @@ export class BuildPanel {
     }
 
     tryPlaceBuilding(type, x, y) {
-        if (!this.game.terrain.canBuildAt(x, y)) {
-            this.showError('只能在草地上建造！');
+        const buildingConfig = this.buildingTypes[type];
+        if (!buildingConfig) {
+            this.showError('未知建筑类型！');
             return;
         }
         
-        const buildingConfig = this.buildingTypes[type];
-        if (!buildingConfig) return;
+        const terrainType = this.game.terrain.getTerrainType(x, y);
+        if (terrainType === 'water') {
+            this.showError('❌ 无法在水中建造！');
+            return;
+        }
+        if (terrainType === 'beach') {
+            this.showError('❌ 无法在沙滩上建造！');
+            return;
+        }
+        if (terrainType !== 'land') {
+            this.showError('❌ 只能在草地上建造！');
+            return;
+        }
         
-        if (!this.hasEnoughResources(buildingConfig.cost)) {
-            this.showError('资源不足！');
+        const resources = this.game.storage.getResources();
+        const missingResources = [];
+        let canAfford = true;
+        
+        for (const [key, value] of Object.entries(buildingConfig.cost)) {
+            const current = resources[key] || 0;
+            if (current < value) {
+                canAfford = false;
+                const resourceInfo = this.game.storage.getResourceInfo(key);
+                const emoji = resourceInfo ? resourceInfo.emoji : '❓';
+                const name = resourceInfo ? resourceInfo.name : key;
+                missingResources.push(`${emoji} ${name}: ${current}/${value}`);
+            }
+        }
+        
+        if (!canAfford) {
+            const message = `❌ 资源不足！\n需要：\n${missingResources.join('\n')}`;
+            this.showError(message);
             return;
         }
         
         const alignedPos = this.snapToGrid(x, y, buildingConfig.size);
         
+        if (!this.game.terrain.canBuildAt(alignedPos.x, alignedPos.y)) {
+            this.showError('❌ 该位置不是草地！');
+            return;
+        }
+        
         if (!this.isSpaceAvailable(alignedPos.x, alignedPos.y, buildingConfig.size)) {
-            this.showError('该位置已有建筑！');
+            this.showError('❌ 该位置已有建筑！');
+            return;
+        }
+        
+        if (this.isOverlappingFarmArea(alignedPos.x, alignedPos.y, buildingConfig.size)) {
+            this.showError('❌ 无法在农田区域建造！');
             return;
         }
         
@@ -238,7 +276,19 @@ export class BuildPanel {
             this.game.renderer.render();
         }
         
-        this.showSuccess(`建造了 ${buildingConfig.name}！`);
+        this.showSuccess(`✅ 建造了 ${buildingConfig.emoji} ${buildingConfig.name}！`);
+    }
+    
+    isOverlappingFarmArea(x, y, size) {
+        if (!this.game.terrain || !this.game.terrain.landRenderer) return false;
+        
+        const farmArea = this.game.terrain.landRenderer.getFarmArea();
+        const halfSize = size / 2;
+        
+        return x + halfSize > farmArea.x &&
+               x - halfSize < farmArea.x + farmArea.width &&
+               y + halfSize > farmArea.y &&
+               y - halfSize < farmArea.y + farmArea.height;
     }
     
     snapToGrid(x, y, size) {
@@ -312,6 +362,10 @@ export class BuildPanel {
         };
         
         toast.style.background = colors[type] || colors.info;
+        toast.style.whiteSpace = 'pre-line';
+        toast.style.padding = '15px 25px';
+        toast.style.maxWidth = '300px';
+        toast.style.textAlign = 'center';
         toast.textContent = message;
         document.body.appendChild(toast);
         
@@ -320,7 +374,7 @@ export class BuildPanel {
             setTimeout(() => {
                 toast.remove();
             }, 300);
-        }, 2000);
+        }, 3000);
     }
 
     showDragPreview(e, emoji) {
@@ -424,10 +478,29 @@ export class BuildPanel {
         const buildingType = item.dataset.type;
         const config = this.buildingTypes[buildingType];
         
-        if (!config) return;
+        if (!config) {
+            this.showError('未知建筑类型！');
+            return;
+        }
         
-        if (!this.hasEnoughResources(config.cost)) {
-            this.showError(`资源不足！需要 ${this.formatCost(config.cost)}`);
+        const resources = this.game.storage.getResources();
+        const missingResources = [];
+        let canAfford = true;
+        
+        for (const [key, value] of Object.entries(config.cost)) {
+            const current = resources[key] || 0;
+            if (current < value) {
+                canAfford = false;
+                const resourceInfo = this.game.storage.getResourceInfo(key);
+                const emoji = resourceInfo ? resourceInfo.emoji : '❓';
+                const name = resourceInfo ? resourceInfo.name : key;
+                missingResources.push(`${emoji} ${name}: ${current}/${value}`);
+            }
+        }
+        
+        if (!canAfford) {
+            const message = `❌ 资源不足！\n需要：\n${missingResources.join('\n')}`;
+            this.showError(message);
             return;
         }
         
