@@ -3,7 +3,11 @@ export class Storage {
         this.resources = {
             wood: 0,
             stone: 0,
-            food: 0,
+            ore: 0,
+            apple: 0,
+            pear: 0,
+            treeSeed: 0,
+            fruitSeed: 0,
             water: 0,
             gold: 0
         };
@@ -13,11 +17,19 @@ export class Storage {
         this.resourceCategories = {
             materials: {
                 name: '材料',
-                items: ['wood', 'stone']
+                items: ['wood', 'stone', 'ore']
+            },
+            fruits: {
+                name: '水果',
+                items: ['apple', 'pear']
+            },
+            seeds: {
+                name: '种子',
+                items: ['treeSeed', 'fruitSeed']
             },
             supplies: {
                 name: '补给',
-                items: ['food', 'water']
+                items: ['water']
             },
             currency: {
                 name: '货币',
@@ -28,7 +40,11 @@ export class Storage {
         this.resourceInfo = {
             wood: { name: '木材', emoji: '🪵', category: 'materials' },
             stone: { name: '石头', emoji: '🪨', category: 'materials' },
-            food: { name: '食物', emoji: '🍖', category: 'supplies' },
+            ore: { name: '矿石', emoji: '💎', category: 'materials' },
+            apple: { name: '苹果', emoji: '🍎', category: 'fruits' },
+            pear: { name: '梨子', emoji: '🍐', category: 'fruits' },
+            treeSeed: { name: '树木种子', emoji: '🌱', category: 'seeds' },
+            fruitSeed: { name: '水果种子', emoji: '🍑', category: 'seeds' },
             water: { name: '淡水', emoji: '💧', category: 'supplies' },
             gold: { name: '金币', emoji: '💰', category: 'currency' }
         };
@@ -113,7 +129,11 @@ export class Storage {
         this.resources = {
             wood: 0,
             stone: 0,
-            food: 0,
+            ore: 0,
+            apple: 0,
+            pear: 0,
+            treeSeed: 0,
+            fruitSeed: 0,
             water: 0,
             gold: 0
         };

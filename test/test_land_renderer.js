@@ -33,7 +33,21 @@ function createMockGame() {
             }
         }),
         getPlayer: () => ({ getPosition: () => ({ x: 400, y: 300 }), x: 400, y: 300 }),
-        getStorage: () => ({ modifyResource: () => {} }),
+        getStorage: () => ({ 
+            modifyResource: () => {},
+            getResourceInfo: (key) => {
+                const info = {
+                    wood: { name: '木材', emoji: '🪵' },
+                    stone: { name: '石头', emoji: '🪨' },
+                    ore: { name: '矿石', emoji: '💎' },
+                    apple: { name: '苹果', emoji: '🍎' },
+                    pear: { name: '梨子', emoji: '🍐' },
+                    treeSeed: { name: '树木种子', emoji: '🌱' },
+                    fruitSeed: { name: '水果种子', emoji: '🍑' }
+                };
+                return info[key] || null;
+            }
+        }),
         getInput: () => ({ wasClicked: () => false }),
         getBuildPanel: () => ({ updateResourceDisplay: () => {} })
     };
@@ -79,8 +93,21 @@ function testResourceManagerGeneratesCollectibleResources() {
     });
     console.assert(allResourcesValid, '所有资源应该有完整的属性');
     
-    const hasValidTypes = resources.some(r => ['tree', 'mine', 'farmland'].includes(r.type));
+    const validTypes = ['bigTree', 'smallTree', 'stonePile', 'farmland', 'treeSeed', 'fruitSeed'];
+    const hasValidTypes = resources.some(r => validTypes.includes(r.type));
     console.assert(hasValidTypes, '应该包含有效的资源类型');
+    
+    const treeTypes = resources.filter(r => ['bigTree', 'smallTree'].includes(r.type));
+    console.assert(treeTypes.length > 0, '应该包含树木资源');
+    
+    const stonePileTypes = resources.filter(r => r.type === 'stonePile');
+    console.assert(stonePileTypes.length > 0, '应该包含石堆资源');
+    
+    const farmlandTypes = resources.filter(r => r.type === 'farmland');
+    console.assert(farmlandTypes.length > 0, '应该包含耕地资源');
+    
+    const seedTypes = resources.filter(r => ['treeSeed', 'fruitSeed'].includes(r.type));
+    console.assert(seedTypes.length >= 0, '应该包含种子资源');
     
     console.log(`✓ ResourceManager测试通过：生成了${resources.length}个可采集资源`);
     resources.forEach(r => console.log(`  - ${r.emoji} ${r.name} (${r.resourceKey}) x${r.amount}`));

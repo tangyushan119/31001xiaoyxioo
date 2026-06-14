@@ -9,29 +9,55 @@ export class ResourceManager {
         this.collectionAnimations = [];
         
         this.resourceTypes = {
-            tree: {
-                emoji: '🌲',
-                name: '树木',
+            bigTree: {
+                emoji: '🌳',
+                name: '大树',
                 resourceKey: 'wood',
-                amount: 5,
-                color: '#2d5a27',
-                spawnChance: 0.4
+                amount: 8,
+                color: '#1e4d2b',
+                spawnChance: 0.15
             },
-            mine: {
-                emoji: '⛏️',
-                name: '矿堆',
+            smallTree: {
+                emoji: '🌲',
+                name: '小树',
+                resourceKey: 'wood',
+                amount: 4,
+                color: '#2d5a27',
+                spawnChance: 0.25
+            },
+            stonePile: {
+                emoji: '🪨',
+                name: '石堆',
                 resourceKey: 'stone',
                 amount: 3,
                 color: '#5a5a5a',
-                spawnChance: 0.3
+                spawnChance: 0.25,
+                secondaryResource: { key: 'ore', amount: 1, chance: 0.3 }
             },
             farmland: {
                 emoji: '🌾',
                 name: '耕地',
-                resourceKey: 'food',
-                amount: 4,
+                resourceKey: 'apple',
+                amount: 3,
                 color: '#8b4513',
-                spawnChance: 0.3
+                spawnChance: 0.2,
+                alternateResource: { key: 'pear', amount: 3, chance: 0.5 }
+            },
+            treeSeed: {
+                emoji: '🌱',
+                name: '树木种子',
+                resourceKey: 'treeSeed',
+                amount: 1,
+                color: '#4ade80',
+                spawnChance: 0.1
+            },
+            fruitSeed: {
+                emoji: '🍑',
+                name: '水果种子',
+                resourceKey: 'fruitSeed',
+                amount: 1,
+                color: '#fb923c',
+                spawnChance: 0.05
             }
         };
         
@@ -187,16 +213,37 @@ export class ResourceManager {
     
     collectResource(resource) {
         const storage = this.game.getStorage();
-        storage.modifyResource(resource.resourceKey, resource.amount);
+        
+        const config = this.resourceTypes[resource.type];
+        let collectedResourceKey = resource.resourceKey;
+        let collectedAmount = resource.amount;
+        
+        if (config.alternateResource && Math.random() < config.alternateResource.chance) {
+            collectedResourceKey = config.alternateResource.key;
+            collectedAmount = config.alternateResource.amount;
+        }
+        
+        storage.modifyResource(collectedResourceKey, collectedAmount);
+        
+        if (config.secondaryResource && Math.random() < config.secondaryResource.chance) {
+            storage.modifyResource(config.secondaryResource.key, config.secondaryResource.amount);
+            this.addCollectionAnimation(resource.x, resource.y, this.getResourceEmoji(config.secondaryResource.key), config.secondaryResource.key);
+        }
         
         resource.isDepleted = true;
         resource.respawnTimer = 0;
         
-        this.addCollectionAnimation(resource.x, resource.y, resource.emoji, resource.resourceKey);
+        this.addCollectionAnimation(resource.x, resource.y, resource.emoji, collectedResourceKey);
         
         this.game.getBuildPanel().updateResourceDisplay();
         
-        this.showCollectionToast(resource);
+        this.showCollectionToast(resource, collectedResourceKey, collectedAmount);
+    }
+    
+    getResourceEmoji(resourceKey) {
+        const storage = this.game.getStorage();
+        const info = storage.getResourceInfo(resourceKey);
+        return info ? info.emoji : '❓';
     }
     
     addCollectionAnimation(x, y, emoji, resourceKey) {
@@ -240,11 +287,19 @@ export class ResourceManager {
         return t * (2 - t);
     }
     
-    showCollectionToast(resource) {
+    showCollectionToast(resource, collectedResourceKey = null, collectedAmount = null) {
+        const storage = this.game.getStorage();
+        const displayKey = collectedResourceKey || resource.resourceKey;
+        const displayAmount = collectedAmount || resource.amount;
+        
+        const resourceInfo = storage.getResourceInfo(displayKey);
+        const resourceName = resourceInfo ? resourceInfo.name : resource.name;
+        const emoji = resourceInfo ? resourceInfo.emoji : '';
+        
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.style.background = 'rgba(39, 174, 96, 0.9)';
-        toast.textContent = `✅ 采集到 ${resource.name} x${resource.amount}`;
+        toast.textContent = `✅ 采集到 ${emoji} ${resourceName} x${displayAmount}`;
         document.body.appendChild(toast);
         
         setTimeout(() => {
