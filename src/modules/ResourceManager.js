@@ -15,7 +15,7 @@ export class ResourceManager {
                 resourceKey: 'wood',
                 amount: 8,
                 color: '#1e4d2b',
-                spawnChance: 0.15
+                spawnChance: 0.12
             },
             smallTree: {
                 emoji: '🌲',
@@ -23,7 +23,7 @@ export class ResourceManager {
                 resourceKey: 'wood',
                 amount: 4,
                 color: '#2d5a27',
-                spawnChance: 0.25
+                spawnChance: 0.2
             },
             stonePile: {
                 emoji: '🪨',
@@ -31,7 +31,7 @@ export class ResourceManager {
                 resourceKey: 'stone',
                 amount: 3,
                 color: '#5a5a5a',
-                spawnChance: 0.25,
+                spawnChance: 0.2,
                 secondaryResource: { key: 'ore', amount: 1, chance: 0.3 }
             },
             farmland: {
@@ -40,7 +40,7 @@ export class ResourceManager {
                 resourceKey: 'apple',
                 amount: 3,
                 color: '#8b4513',
-                spawnChance: 0.2,
+                spawnChance: 0.15,
                 alternateResource: { key: 'pear', amount: 3, chance: 0.5 }
             },
             treeSeed: {
@@ -49,7 +49,7 @@ export class ResourceManager {
                 resourceKey: 'treeSeed',
                 amount: 1,
                 color: '#4ade80',
-                spawnChance: 0.1
+                spawnChance: 0.08
             },
             fruitSeed: {
                 emoji: '🍑',
@@ -57,6 +57,38 @@ export class ResourceManager {
                 resourceKey: 'fruitSeed',
                 amount: 1,
                 color: '#fb923c',
+                spawnChance: 0.05
+            },
+            wheatSeed: {
+                emoji: '🌾',
+                name: '小麦种子',
+                resourceKey: 'wheatSeed',
+                amount: 1,
+                color: '#f4d03f',
+                spawnChance: 0.05
+            },
+            carrotSeed: {
+                emoji: '🥕',
+                name: '胡萝卜种子',
+                resourceKey: 'carrotSeed',
+                amount: 1,
+                color: '#e67e22',
+                spawnChance: 0.05
+            },
+            tomatoSeed: {
+                emoji: '🍅',
+                name: '番茄种子',
+                resourceKey: 'tomatoSeed',
+                amount: 1,
+                color: '#e74c3c',
+                spawnChance: 0.05
+            },
+            cornSeed: {
+                emoji: '🌽',
+                name: '玉米种子',
+                resourceKey: 'cornSeed',
+                amount: 1,
+                color: '#f39c12',
                 spawnChance: 0.05
             }
         };
