@@ -45,6 +45,11 @@ export class Enemy {
             return building && building.health > 0;
         }
         
+        if (this.target.type === 'farm') {
+            const plots = this.game.storage.getFarmPlots();
+            return plots.some(p => p.id === this.target.id && p.crop);
+        }
+        
         return false;
     }
 
@@ -58,6 +63,17 @@ export class Enemy {
                 const dy = building.y - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 targets.push({ type: 'building', id: building.id, x: building.x, y: building.y, distance });
+            }
+        });
+        
+        const plots = this.game.storage.getFarmPlots();
+        plots.forEach(plot => {
+            if (plot.crop) {
+                const plotPos = this.getPlotPosition(plot);
+                const dx = plotPos.x - this.x;
+                const dy = plotPos.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                targets.push({ type: 'farm', id: plot.id, x: plotPos.x, y: plotPos.y, distance });
             }
         });
         
