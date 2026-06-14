@@ -42,6 +42,7 @@ export class Terrain {
     }
 
     init() {
+        this.seaRenderer.init();
         this.landRenderer.init();
     }
 

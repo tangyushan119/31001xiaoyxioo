@@ -5,8 +5,14 @@ export class SeaRenderer {
         this.centerX = renderer.width / 2;
         this.centerY = renderer.height / 2;
         this.seaRadius = 0;
-        this.maxRadius = 0;
+        this.maxRadius = Math.max(renderer.width, renderer.height);
         this.time = 0;
+        this.isInitialized = false;
+    }
+
+    init() {
+        this.updateDimensions();
+        this.isInitialized = true;
     }
 
     updateDimensions() {
@@ -24,6 +30,9 @@ export class SeaRenderer {
     }
 
     render() {
+        if (!this.isInitialized) {
+            this.init();
+        }
         this.drawSea();
         this.drawWaveLayers();
     }
@@ -43,53 +52,59 @@ export class SeaRenderer {
     }
 
     drawWaveLayers() {
-        this.ctx.save();
-        
         const waveLayers = [
-            { amplitude: 8, frequency: 0.02, speed: 1.2, opacity: 0.15, blur: 4 },
-            { amplitude: 6, frequency: 0.03, speed: 1.8, opacity: 0.12, blur: 3 },
-            { amplitude: 4, frequency: 0.05, speed: 2.5, opacity: 0.08, blur: 2 },
-            { amplitude: 3, frequency: 0.08, speed: 3.2, opacity: 0.06, blur: 1 },
+            { amplitude: 10, frequency: 0.015, speed: 1.0, opacity: 0.18, blur: 5 },
+            { amplitude: 7, frequency: 0.025, speed: 1.5, opacity: 0.14, blur: 3 },
+            { amplitude: 5, frequency: 0.04, speed: 2.0, opacity: 0.1, blur: 2 },
+            { amplitude: 3, frequency: 0.06, speed: 2.8, opacity: 0.07, blur: 1 },
         ];
 
         waveLayers.forEach((layer, layerIndex) => {
             this.drawWaveLayer(layer, layerIndex);
         });
-
-        this.ctx.restore();
     }
 
     drawWaveLayer(layer, index) {
+        this.ctx.save();
+        
         this.ctx.globalAlpha = layer.opacity;
         this.ctx.filter = `blur(${layer.blur}px)`;
         
         const gradient = this.ctx.createLinearGradient(0, 0, 0, this.renderer.height);
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${0.8})`);
-        gradient.addColorStop(0.5, `rgba(200, 230, 255, ${0.6})`);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+        gradient.addColorStop(0.3, 'rgba(220, 240, 255, 0.7)');
+        gradient.addColorStop(0.7, 'rgba(180, 220, 255, 0.4)');
         gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
         
         this.ctx.fillStyle = gradient;
         this.ctx.beginPath();
         
-        const startAngle = this.seaRadius / this.maxRadius * Math.PI * 2;
+        const points = [];
+        const step = 0.015;
         
-        for (let angle = startAngle; angle < Math.PI * 2; angle += 0.02) {
-            const baseRadius = this.seaRadius + (angle - startAngle) / (Math.PI * 2 - startAngle) * (this.maxRadius - this.seaRadius);
-            const waveOffset = Math.sin(angle * layer.frequency * 20 + this.time * layer.speed * 5 + index * 1.5) * layer.amplitude;
-            const waveOffset2 = Math.sin(angle * layer.frequency * 15 + this.time * layer.speed * 3) * layer.amplitude * 0.5;
+        for (let angle = 0; angle <= Math.PI * 2; angle += step) {
+            const baseRadius = this.seaRadius + (angle / (Math.PI * 2)) * (this.maxRadius - this.seaRadius) * 0.6;
+            const waveOffset = Math.sin(angle * layer.frequency * 25 + this.time * layer.speed * 4 + index * 2) * layer.amplitude;
+            const waveOffset2 = Math.sin(angle * layer.frequency * 18 + this.time * layer.speed * 2.5 + index) * layer.amplitude * 0.6;
             
             const x = this.centerX + Math.cos(angle) * (baseRadius + waveOffset + waveOffset2);
             const y = this.centerY + Math.sin(angle) * (baseRadius + waveOffset + waveOffset2);
             
-            if (angle === startAngle) {
-                this.ctx.moveTo(x, y);
-            } else {
-                this.ctx.lineTo(x, y);
-            }
+            points.push({ x, y });
         }
         
-        this.ctx.closePath();
-        this.ctx.fill();
+        if (points.length > 0) {
+            this.ctx.moveTo(points[0].x, points[0].y);
+            
+            for (let i = 1; i < points.length; i++) {
+                this.ctx.lineTo(points[i].x, points[i].y);
+            }
+            
+            this.ctx.closePath();
+            this.ctx.fill();
+        }
+        
+        this.ctx.restore();
     }
 
     isInSea(x, y) {
