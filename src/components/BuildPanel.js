@@ -473,19 +473,17 @@ export class BuildPanel {
     updateResourceDisplay() {
         const resources = this.game.storage.getResources();
         
-        const elements = {
-            wood: document.getElementById('wood'),
-            stone: document.getElementById('stone'),
-            food: document.getElementById('food'),
-            water: document.getElementById('water'),
-            gold: document.getElementById('gold')
-        };
+        const resourceKeys = [
+            'wood', 'stone', 'ore', 'gold', 'apple', 'pear', 
+            'treeSeed', 'fruitSeed', 'wheatSeed', 'carrotSeed', 'tomatoSeed', 'cornSeed'
+        ];
         
-        for (const [key, element] of Object.entries(elements)) {
+        resourceKeys.forEach(key => {
+            const element = document.getElementById(key);
             if (element) {
                 element.textContent = resources[key] || 0;
             }
-        }
+        });
         
         if (this.game.inventoryPanel) {
             this.game.inventoryPanel.updateInventory();

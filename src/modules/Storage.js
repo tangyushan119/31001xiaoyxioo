@@ -1,23 +1,23 @@
 export class Storage {
     constructor() {
         this.resources = {
-            wood: 100,
-            stone: 100,
-            ore: 0,
-            apple: 0,
-            pear: 0,
-            treeSeed: 0,
-            fruitSeed: 0,
-            wheatSeed: 5,
-            carrotSeed: 5,
-            tomatoSeed: 5,
-            cornSeed: 5,
+            wood: 200,
+            stone: 200,
+            ore: 200,
+            apple: 200,
+            pear: 200,
+            treeSeed: 200,
+            fruitSeed: 200,
+            wheatSeed: 200,
+            carrotSeed: 200,
+            tomatoSeed: 200,
+            cornSeed: 200,
             wheatHarvest: 0,
             carrotHarvest: 0,
             tomatoHarvest: 0,
             cornHarvest: 0,
             water: 0,
-            gold: 100
+            gold: 200
         };
         
         this.storageCapacity = 500;
@@ -163,23 +163,23 @@ export class Storage {
 
     resetToDefaults() {
         this.resources = {
-            wood: 100,
-            stone: 100,
-            ore: 0,
-            apple: 0,
-            pear: 0,
-            treeSeed: 0,
-            fruitSeed: 0,
-            water: 0,
-            gold: 100,
-            wheatSeed: 0,
-            carrotSeed: 0,
-            tomatoSeed: 0,
-            cornSeed: 0,
+            wood: 200,
+            stone: 200,
+            ore: 200,
+            apple: 200,
+            pear: 200,
+            treeSeed: 200,
+            fruitSeed: 200,
+            wheatSeed: 200,
+            carrotSeed: 200,
+            tomatoSeed: 200,
+            cornSeed: 200,
             wheatHarvest: 0,
             carrotHarvest: 0,
             tomatoHarvest: 0,
-            cornHarvest: 0
+            cornHarvest: 0,
+            water: 0,
+            gold: 200
         };
         this.buildings = [];
         this.farms = [];
