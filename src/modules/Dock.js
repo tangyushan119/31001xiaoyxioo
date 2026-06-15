@@ -402,18 +402,20 @@ export class Dock {
     renderShips(ctx) {
         if (!this.game || !this.game.terrain) return;
         
-        const beachArea = this.game.terrain.getBeachArea();
-        if (!beachArea) return;
+        const storage = this.game.getStorage();
+        const docks = storage.getBuildings().filter(b => b.type === 'dock');
+        if (docks.length === 0) return;
         
         const dockedShips = this.getDockedShips();
         if (dockedShips.length === 0) return;
         
-        const startX = beachArea.x + 30;
-        const spacing = 60;
+        const dock = docks[0];
+        const seaOffset = 50;
+        const spacing = 55;
         
         dockedShips.forEach((ship, index) => {
-            const x = startX + index * spacing;
-            const y = beachArea.y + beachArea.height / 2;
+            const x = dock.x + seaOffset + index * spacing;
+            const y = dock.y;
             
             ctx.save();
             

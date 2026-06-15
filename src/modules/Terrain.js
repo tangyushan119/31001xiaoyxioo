@@ -127,4 +127,49 @@ export class Terrain {
             height: this.beachWidth * 2
         };
     }
+    
+    getDockPlacementPositions() {
+        const positions = [];
+        const numPositions = 3;
+        const startAngle = -Math.PI / 2 - 0.5;
+        const angleStep = 1.0;
+        
+        for (let i = 0; i < numPositions; i++) {
+            const angle = startAngle + i * angleStep;
+            const radius = (this.landRadius + this.beachOuterRadius) / 2;
+            
+            positions.push({
+                x: this.centerX + Math.cos(angle) * radius,
+                y: this.centerY + Math.sin(angle) * radius,
+                angle: angle
+            });
+        }
+        
+        return positions;
+    }
+    
+    canBuildDockAt(x, y) {
+        const dockPositions = this.getDockPlacementPositions();
+        const tolerance = 40;
+        
+        return dockPositions.some(pos => {
+            const distance = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+            return distance < tolerance;
+        });
+    }
+    
+    isNearDock(x, y) {
+        const buildings = this.renderer.game?.storage?.getBuildings();
+        if (!buildings) return false;
+        
+        const docks = buildings.filter(b => b.type === 'dock');
+        if (docks.length === 0) return false;
+        
+        const tolerance = 80;
+        
+        return docks.some(dock => {
+            const distance = Math.sqrt(Math.pow(x - dock.x, 2) + Math.pow(y - dock.y, 2));
+            return distance < tolerance;
+        });
+    }
 }
