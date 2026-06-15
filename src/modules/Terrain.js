@@ -118,4 +118,13 @@ export class Terrain {
     getLandRenderer() {
         return this.landRenderer;
     }
+    
+    getBeachArea() {
+        return {
+            x: this.centerX - this.beachOuterRadius,
+            y: this.centerY - this.beachWidth,
+            width: this.beachOuterRadius * 2,
+            height: this.beachWidth * 2
+        };
+    }
 }

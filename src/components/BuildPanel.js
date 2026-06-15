@@ -103,6 +103,15 @@ export class BuildPanel {
                 attackRange: 250,
                 attackDamage: 45,
                 attackInterval: 1.5
+            },
+            dock: {
+                name: '码头',
+                emoji: '⛵',
+                cost: { wood: 80, stone: 40 },
+                size: 80,
+                health: 200,
+                maxHealth: 200,
+                isDock: true
             }
         };
         
@@ -539,9 +548,15 @@ export class BuildPanel {
         const item = e.target;
         const buildingType = item.dataset.type;
         const soldierType = item.dataset.soldier;
+        const shipType = item.dataset.ship;
         
         if (soldierType) {
             this.onTrainSoldier(soldierType);
+            return;
+        }
+        
+        if (shipType) {
+            this.onBuildShip(shipType);
             return;
         }
         
@@ -574,6 +589,22 @@ export class BuildPanel {
         }
         
         this.selectBuilding(buildingType);
+    }
+    
+    onBuildShip(shipType) {
+        if (!this.game.dock) {
+            this.showError('❌ 需要先建造码头！');
+            return;
+        }
+        
+        const result = this.game.dock.buildShip(shipType);
+        
+        if (result.success) {
+            this.showSuccess(result.message);
+            this.updateResourceDisplay();
+        } else {
+            this.showError(result.message);
+        }
     }
     
     onTrainSoldier(soldierType) {

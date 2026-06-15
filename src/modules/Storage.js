@@ -66,7 +66,16 @@ export class Storage {
             tomatoHarvest: { name: '番茄', emoji: '🍅', category: 'harvests' },
             cornHarvest: { name: '玉米', emoji: '🌽', category: 'harvests' },
             water: { name: '淡水', emoji: '💧', category: 'supplies' },
-            gold: { name: '金币', emoji: '💰', category: 'currency' }
+            gold: { name: '金币', emoji: '💰', category: 'currency' },
+            wheatHarvest: { name: '小麦', emoji: '🌾', category: 'food' },
+            carrotHarvest: { name: '胡萝卜', emoji: '🥕', category: 'food' },
+            tomatoHarvest: { name: '番茄', emoji: '🍅', category: 'food' },
+            cornHarvest: { name: '玉米', emoji: '🌽', category: 'food' }
+        };
+        
+        this.resourceCategories.food = {
+            name: '食物',
+            items: ['wheatHarvest', 'carrotHarvest', 'tomatoHarvest', 'cornHarvest']
         };
         
         this.buildings = [];
@@ -75,6 +84,8 @@ export class Storage {
         this.plantations = [];
         this.farmPlots = [];
         this.playerPosition = null;
+        this.ships = [];
+        this.exploredLocations = ['home'];
         
         this.autoSaveInterval = null;
         

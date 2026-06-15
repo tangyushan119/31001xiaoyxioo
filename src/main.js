@@ -9,6 +9,7 @@ import { ResourceManager } from './modules/ResourceManager.js';
 import { EnemyManager } from './modules/EnemyManager.js';
 import { TurretManager } from './modules/TurretManager.js';
 import { Barracks } from './modules/Barracks.js';
+import { Dock } from './modules/Dock.js';
 
 export class Game {
     constructor() {
@@ -24,6 +25,7 @@ export class Game {
         this.enemyManager = null;
         this.turretManager = null;
         this.barracks = null;
+        this.dock = null;
         
         this.lastTime = 0;
         this.isRunning = false;
@@ -89,6 +91,8 @@ export class Game {
         this.turretManager.init();
         
         this.barracks = new Barracks(this);
+        
+        this.dock = new Dock(this);
         
         this.renderer.setGame(this);
         
@@ -642,6 +646,10 @@ export class Game {
 
     getBarracks() {
         return this.barracks;
+    }
+
+    getDock() {
+        return this.dock;
     }
 }
 

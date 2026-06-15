@@ -135,10 +135,25 @@ export class Renderer {
         this.renderTerrain();
         this.renderBuildings();
         this.renderTurrets();
+        this.renderShips();
         this.renderBuildingPreview();
         this.renderEnemies();
         this.renderPlayer();
         this.renderGrid();
+        
+        this.renderSailProgress();
+    }
+    
+    renderShips() {
+        if (!this.game || !this.game.dock) return;
+        
+        this.game.dock.renderShips(this.ctx);
+    }
+    
+    renderSailProgress() {
+        if (!this.game || !this.game.dock) return;
+        
+        this.game.dock.renderSailProgress(this.ctx);
     }
     
     renderTurrets() {
