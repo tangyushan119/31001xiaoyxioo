@@ -20,6 +20,7 @@ export class Enemy {
         
         this.emoji = '👹';
         this.type = 'goblin';
+        this.isDead = false;
     }
 
     update(deltaTime) {
@@ -180,9 +181,14 @@ export class Enemy {
     }
 
     die() {
+        if (this.isDead) return;
+        
+        this.isDead = true;
         this.game.resourceManager.addResource('gold', 10);
         this.game.showToast(`💰 击杀敌军获得 10 金币！`);
         this.game.enemyManager.removeEnemy(this.id);
+        
+        this.target = null;
     }
 
     isOnIsland() {

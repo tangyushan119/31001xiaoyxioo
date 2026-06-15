@@ -67,7 +67,7 @@ export class Turret {
         this.updateProjectiles(deltaTime);
         this.updateDamageNumbers(deltaTime);
         
-        if (this.target && this.isInRange(this.target)) {
+        if (this.target && !this.target.isDead && this.isInRange(this.target)) {
             if (this.attackTimer >= this.attackInterval) {
                 this.attackTimer = 0;
                 this.attack();
@@ -87,6 +87,8 @@ export class Turret {
         let nearestDistance = Infinity;
         
         enemies.forEach(enemy => {
+            if (enemy.isDead) return;
+            
             const distance = this.getDistance(enemy.x, enemy.y);
             if (distance <= this.attackRange && distance < nearestDistance) {
                 nearestDistance = distance;
@@ -108,7 +110,7 @@ export class Turret {
     }
     
     attack() {
-        if (!this.target) return;
+        if (!this.target || this.target.isDead) return;
         
         this.isAttacking = true;
         
@@ -125,11 +127,14 @@ export class Turret {
     
     fireBullets() {
         const bulletCount = 3;
+        const target = this.target;
         
         for (let i = 0; i < bulletCount; i++) {
             setTimeout(() => {
-                const dx = this.target.x - this.x;
-                const dy = this.target.y - this.y;
+                if (!target || target.isDead) return;
+                
+                const dx = target.x - this.x;
+                const dy = target.y - this.y;
                 const angle = Math.atan2(dy, dx);
                 
                 const spread = (Math.random() - 0.5) * this.config.bulletSpread * 2;
@@ -150,6 +155,8 @@ export class Turret {
     }
     
     launchProjectile() {
+        if (!this.target || this.target.isDead) return;
+        
         const dx = this.target.x - this.x;
         const dy = this.target.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -181,6 +188,8 @@ export class Turret {
             
             const enemies = this.game.enemyManager.getEnemies();
             for (const enemy of enemies) {
+                if (enemy.isDead) continue;
+                
                 const dist = Math.sqrt(
                     Math.pow(projectile.x - enemy.x, 2) + 
                     Math.pow(projectile.y - enemy.y, 2)
