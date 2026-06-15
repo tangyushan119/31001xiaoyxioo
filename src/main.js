@@ -8,6 +8,7 @@ import { InventoryPanel } from './components/InventoryPanel.js';
 import { ResourceManager } from './modules/ResourceManager.js';
 import { EnemyManager } from './modules/EnemyManager.js';
 import { TurretManager } from './modules/TurretManager.js';
+import { Barracks } from './modules/Barracks.js';
 
 export class Game {
     constructor() {
@@ -22,6 +23,7 @@ export class Game {
         this.resourceManager = null;
         this.enemyManager = null;
         this.turretManager = null;
+        this.barracks = null;
         
         this.lastTime = 0;
         this.isRunning = false;
@@ -54,6 +56,27 @@ export class Game {
                 this.clearSelectedSeed();
             }
         });
+        
+        const trainBtns = document.querySelectorAll('.train-btn');
+        trainBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => this.onTrainClick(e));
+        });
+    }
+    
+    onTrainClick(e) {
+        const btn = e.target;
+        const soldierType = btn.dataset.soldier;
+        
+        if (!this.barracks) return;
+        
+        const result = this.barracks.train(soldierType);
+        
+        if (result.success) {
+            this.showToast(result.message);
+            this.buildPanel.updateResourceDisplay();
+        } else {
+            this.showToast(result.message);
+        }
     }
 
     startGameLoop() {
@@ -85,6 +108,8 @@ export class Game {
         
         this.turretManager = new TurretManager(this);
         this.turretManager.init();
+        
+        this.barracks = new Barracks(this);
         
         this.renderer.setGame(this);
         
@@ -634,6 +659,10 @@ export class Game {
 
     getTurretManager() {
         return this.turretManager;
+    }
+
+    getBarracks() {
+        return this.barracks;
     }
 }
 

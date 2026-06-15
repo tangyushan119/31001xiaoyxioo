@@ -729,4 +729,21 @@ export class BuildPanel {
         }
         return parts.join(', ');
     }
+    
+    updateSoldierDisplay() {
+        if (!this.game.barracks) return;
+        
+        const soldiers = this.game.barracks.getAllSoldiers();
+        const soldierInfo = this.game.barracks.getAllSoldierInfo();
+        
+        const infantryCount = document.getElementById('infantry-count');
+        const archerCount = document.getElementById('archer-count');
+        
+        if (infantryCount) {
+            infantryCount.textContent = soldiers.infantry || 0;
+        }
+        if (archerCount) {
+            archerCount.textContent = soldiers.archer || 0;
+        }
+    }
 }
