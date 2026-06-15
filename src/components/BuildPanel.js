@@ -79,6 +79,30 @@ export class BuildPanel {
                 size: 45,
                 health: 180,
                 maxHealth: 180
+            },
+            machineGun: {
+                name: '机枪炮塔',
+                emoji: '🔫',
+                cost: { wood: 40, stone: 35 },
+                size: 45,
+                health: 150,
+                maxHealth: 150,
+                isTurret: true,
+                attackRange: 180,
+                attackDamage: 15,
+                attackInterval: 0.3
+            },
+            catapult: {
+                name: '投石炮塔',
+                emoji: '🪨',
+                cost: { wood: 60, stone: 50 },
+                size: 55,
+                health: 200,
+                maxHealth: 200,
+                isTurret: true,
+                attackRange: 250,
+                attackDamage: 45,
+                attackInterval: 1.5
             }
         };
         
@@ -263,28 +287,34 @@ export class BuildPanel {
         
         this.consumeResources(buildingConfig.cost);
         
-        const buildingData = {
-            id: Date.now(),
-            type,
-            x: alignedPos.x,
-            y: alignedPos.y,
-            size: buildingConfig.size,
-            emoji: buildingConfig.emoji,
-            name: buildingConfig.name,
-            health: buildingConfig.health || 100,
-            maxHealth: buildingConfig.maxHealth || 100
-        };
-        
-        if (buildingConfig.goldPerSecond) {
-            buildingData.goldPerSecond = buildingConfig.goldPerSecond;
-            buildingData.lastGoldTime = Date.now();
+        if (buildingConfig.isTurret) {
+            if (this.game.turretManager) {
+                this.game.turretManager.addTurret(type, alignedPos.x, alignedPos.y);
+            }
+        } else {
+            const buildingData = {
+                id: Date.now(),
+                type,
+                x: alignedPos.x,
+                y: alignedPos.y,
+                size: buildingConfig.size,
+                emoji: buildingConfig.emoji,
+                name: buildingConfig.name,
+                health: buildingConfig.health || 100,
+                maxHealth: buildingConfig.maxHealth || 100
+            };
+            
+            if (buildingConfig.goldPerSecond) {
+                buildingData.goldPerSecond = buildingConfig.goldPerSecond;
+                buildingData.lastGoldTime = Date.now();
+            }
+            
+            if (buildingConfig.storageBonus) {
+                buildingData.storageBonus = buildingConfig.storageBonus;
+            }
+            
+            this.game.storage.addBuilding(buildingData);
         }
-        
-        if (buildingConfig.storageBonus) {
-            buildingData.storageBonus = buildingConfig.storageBonus;
-        }
-        
-        this.game.storage.addBuilding(buildingData);
         
         if (buildingConfig.storageBonus) {
             this.game.storage.addStorageCapacity(buildingConfig.storageBonus);

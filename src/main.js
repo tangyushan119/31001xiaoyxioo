@@ -7,6 +7,7 @@ import { BuildPanel } from './components/BuildPanel.js';
 import { InventoryPanel } from './components/InventoryPanel.js';
 import { ResourceManager } from './modules/ResourceManager.js';
 import { EnemyManager } from './modules/EnemyManager.js';
+import { TurretManager } from './modules/TurretManager.js';
 
 export class Game {
     constructor() {
@@ -20,6 +21,7 @@ export class Game {
         this.inventoryPanel = null;
         this.resourceManager = null;
         this.enemyManager = null;
+        this.turretManager = null;
         
         this.lastTime = 0;
         this.isRunning = false;
@@ -81,6 +83,9 @@ export class Game {
         
         this.enemyManager = new EnemyManager(this);
         
+        this.turretManager = new TurretManager(this);
+        this.turretManager.init();
+        
         this.renderer.setGame(this);
         
         this.buildPanel.updateResourceDisplay();
@@ -121,6 +126,10 @@ export class Game {
         
         if (this.enemyManager) {
             this.enemyManager.updateEnemies(deltaTime);
+        }
+        
+        if (this.turretManager) {
+            this.turretManager.updateTurrets(deltaTime);
         }
         
         if (this.storage) {
@@ -549,6 +558,9 @@ export class Game {
         if (this.enemyManager) {
             this.enemyManager.stop();
         }
+        if (this.turretManager) {
+            this.turretManager.clearAll();
+        }
     }
 
     restart() {
@@ -559,6 +571,9 @@ export class Game {
         }
         if (this.enemyManager) {
             this.enemyManager.reset();
+        }
+        if (this.turretManager) {
+            this.turretManager.reset();
         }
         this.buildPanel.updateResourceDisplay();
         this.buildPanel.updateBuildingCount();
@@ -615,6 +630,10 @@ export class Game {
 
     getEnemyManager() {
         return this.enemyManager;
+    }
+
+    getTurretManager() {
+        return this.turretManager;
     }
 }
 

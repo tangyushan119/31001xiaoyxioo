@@ -134,10 +134,17 @@ export class Renderer {
         this.clear();
         this.renderTerrain();
         this.renderBuildings();
+        this.renderTurrets();
         this.renderBuildingPreview();
         this.renderEnemies();
         this.renderPlayer();
         this.renderGrid();
+    }
+    
+    renderTurrets() {
+        if (!this.game || !this.game.turretManager) return;
+        
+        this.game.turretManager.renderTurrets(this.ctx);
     }
     
     renderEnemies() {
