@@ -740,6 +740,134 @@
             margin-top: 8px;
             text-align: center;
         }
+
+        #ship-building-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 420px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ship-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ship-panel-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .ship-panel-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .ship-panel-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .ship-types-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ship-type-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .ship-type-item:hover:not(.disabled) {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: rgba(74, 222, 128, 0.5);
+            transform: translateX(5px);
+        }
+
+        .ship-type-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ship-emoji {
+            font-size: 32px;
+        }
+
+        .ship-info {
+            flex: 1;
+        }
+
+        .ship-name {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .ship-cost {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .ship-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .owned-ships-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .owned-ship-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .owned-ship-emoji {
+            font-size: 24px;
+        }
+
+        .owned-ship-name {
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -931,6 +1059,24 @@
             </div>
         </div>
         <button id="sail-btn" class="sail-button" disabled>⛵ 出发远航</button>
+    </div>
+
+    <div id="ship-building-panel" style="display: none;">
+        <div class="ship-panel-header">
+            <h3>⛵ 造船工坊</h3>
+            <button class="close-btn" onclick="document.getElementById('ship-building-panel').style.display = 'none'">×</button>
+        </div>
+        <div class="ship-panel-content">
+            <div class="ship-panel-section">
+                <div class="section-title">可建造船只</div>
+                <div class="ship-types-list" id="ship-types-list"></div>
+            </div>
+            <div class="ship-panel-section">
+                <div class="section-title">已拥有船只</div>
+                <div class="owned-ships-list" id="owned-ships-list"></div>
+            </div>
+        </div>
+        <button id="sail-from-ship-panel" class="sail-button" onclick="document.getElementById('ship-building-panel').style.display = 'none'; window.game.buildPanel.showSailPanel()">🚢 出发远航</button>
     </div>
 
     <script type="module" src="src/main.js"></script>
