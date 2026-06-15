@@ -531,4 +531,10 @@ export class ResourceManager {
     setRefreshInterval(interval) {
         this.refreshInterval = interval;
     }
+    
+    addResource(type, amount) {
+        const storage = this.game.getStorage();
+        storage.modifyResource(type, amount);
+        this.game.getBuildPanel().updateResourceDisplay();
+    }
 }
