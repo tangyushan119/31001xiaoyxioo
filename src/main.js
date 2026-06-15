@@ -198,7 +198,7 @@ export class Game {
         const terrainType = this.terrain.getTerrainType(mousePos.x, mousePos.y);
         
         if (buildingConfig.isDock) {
-            if (terrainType !== 'beach') {
+            if (terrainType === 'water') {
                 return;
             }
         } else {
