@@ -220,6 +220,14 @@ export class Game {
 
     onBuildingClick(building) {
         console.log('Clicked on building:', building.name);
+        
+        if (building.type === 'dock') {
+            if (this.buildPanel && !this.buildPanel.isShipBuildingUnlocked()) {
+                this.buildPanel.unlockShipBuilding();
+            } else if (this.buildPanel && this.buildPanel.isShipBuildingUnlocked()) {
+                this.showToast('⛵ 码头已激活，可建造船只！');
+            }
+        }
     }
     
     updateBuildings(deltaTime) {

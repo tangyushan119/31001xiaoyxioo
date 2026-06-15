@@ -128,6 +128,22 @@ export class BuildPanel {
         this.selectedShipId = null;
         this.selectedDestinationId = null;
         this.currentFoodCost = 0;
+        this.shipBuildingUnlocked = false;
+    }
+    
+    unlockShipBuilding() {
+        this.shipBuildingUnlocked = true;
+        this.updateBuildItemStates();
+        this.showSuccess('✅ 造船功能已解锁！');
+    }
+    
+    isShipBuildingUnlocked() {
+        return this.shipBuildingUnlocked;
+    }
+    
+    lockShipBuilding() {
+        this.shipBuildingUnlocked = false;
+        this.updateBuildItemStates();
     }
 
     setupEventListeners() {
@@ -561,7 +577,7 @@ export class BuildPanel {
                 const shipConfig = dock.shipTypes[shipType];
                 if (!shipConfig) return;
                 
-                let canBuildShip = hasDock;
+                let canBuildShip = this.shipBuildingUnlocked && hasDock;
                 if (canBuildShip) {
                     for (const [key, value] of Object.entries(shipConfig.cost)) {
                         if ((resources[key] || 0) < value) {
