@@ -20,7 +20,7 @@ export class Storage {
             gold: 200
         };
         
-        this.storageCapacity = 500;
+        this.storageCapacity = 3000;
         
         this.resourceCategories = {
             materials: {

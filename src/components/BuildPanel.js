@@ -472,13 +472,9 @@ export class BuildPanel {
 
     updateResourceDisplay() {
         const resources = this.game.storage.getResources();
+        const allResourceInfo = this.game.storage.getAllResourceInfo();
         
-        const resourceKeys = [
-            'wood', 'stone', 'ore', 'gold', 'apple', 'pear', 
-            'treeSeed', 'fruitSeed', 'wheatSeed', 'carrotSeed', 'tomatoSeed', 'cornSeed'
-        ];
-        
-        resourceKeys.forEach(key => {
+        Object.keys(allResourceInfo).forEach(key => {
             const element = document.getElementById(key);
             if (element) {
                 element.textContent = resources[key] || 0;
