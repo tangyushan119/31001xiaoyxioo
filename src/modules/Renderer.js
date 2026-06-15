@@ -225,7 +225,9 @@ export class Renderer {
         
         const buildings = this.game.storage.getBuildings();
         buildings.forEach(building => {
-            this.renderBuilding(building);
+            if (!building.isTurret) {
+                this.renderBuilding(building);
+            }
         });
     }
 
