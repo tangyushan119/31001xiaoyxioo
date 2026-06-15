@@ -497,101 +497,15 @@
             color: #4ade80;
         }
 
-        .soldier-panel {
-            margin-top: 15px;
-            padding: 12px;
-            background: rgba(30, 41, 59, 0.8);
-            border-radius: 8px;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+        .soldier-train-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
         }
 
-        .soldier-header {
-            text-align: center;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            color: #3b82f6;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .soldier-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            margin-bottom: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .soldier-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .soldier-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .soldier-emoji {
-            font-size: 24px;
-        }
-
-        .soldier-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .soldier-name {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .soldier-count {
-            font-size: 16px;
-            font-weight: bold;
-            color: #4ade80;
-        }
-
-        .train-btn {
-            padding: 6px 12px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .train-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-        }
-
-        .train-btn:disabled {
-            background: rgba(100, 100, 100, 0.5);
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        .training-progress {
-            margin-top: 8px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .training-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            border-radius: 2px;
-            transition: width 0.1s ease;
+        .soldier-train-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
         }
     </style>
 </head>
@@ -651,6 +565,18 @@
                 </div>
             </div>
             
+            <div class="category-group">
+                <button class="category-btn" data-category="barracks">
+                    <span class="category-icon">🏰</span>
+                    <span class="category-name">兵营</span>
+                    <span class="category-arrow">▶</span>
+                </button>
+                <div class="sub-items" data-category="barracks">
+                    <div class="build-item soldier-train-btn" data-soldier="infantry" title="训练步兵 - 消耗: 20💰 + 10🌾">⚔️</div>
+                    <div class="build-item soldier-train-btn" data-soldier="archer" title="训练弓箭手 - 消耗: 35💰 + 15🌾">🏹</div>
+                </div>
+            </div>
+            
             <div class="build-item inventory-btn" data-action="toggle-inventory" title="打开背包">📭</div>
         </div>
         
@@ -662,48 +588,9 @@
                 <value id="wood">100</value>
             </div>
             <div class="info-item">
-                <label>🪨 石头</label>
+                <label>🪨 矿石</label>
                 <value id="stone">50</value>
             </div>
-            <div class="info-item">
-                <label>🌾 小麦</label>
-                <value id="food">30</value>
-            </div>
-            <div class="info-item">
-                <label>💧 淡水</label>
-                <value id="water">50</value>
-            </div>
-            <div class="info-item">
-                <label>💰 金币</label>
-                <value id="gold">0</value>
-            </div>
-            <div class="info-item">
-                <label>🏗️ 建筑</label>
-                <value id="buildings">0</value>
-            </div>
-            
-            <div class="soldier-panel">
-                <div class="soldier-header">
-                    <span>🏰 兵营</span>
-                </div>
-                <div class="soldier-item">
-                    <span class="soldier-emoji">⚔️</span>
-                    <div class="soldier-info">
-                        <span class="soldier-name">步兵</span>
-                        <span class="soldier-count" id="infantry-count">0</span>
-                    </div>
-                    <button class="train-btn" data-soldier="infantry">训练</button>
-                </div>
-                <div class="soldier-item">
-                    <span class="soldier-emoji">🏹</span>
-                    <div class="soldier-info">
-                        <span class="soldier-name">弓箭手</span>
-                        <span class="soldier-count" id="archer-count">0</span>
-                    </div>
-                    <button class="train-btn" data-soldier="archer">训练</button>
-                </div>
-            </div>
-            
             <button id="reset-btn">🔄 重置存档</button>
         </div>
     </div>

@@ -56,27 +56,6 @@ export class Game {
                 this.clearSelectedSeed();
             }
         });
-        
-        const trainBtns = document.querySelectorAll('.train-btn');
-        trainBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => this.onTrainClick(e));
-        });
-    }
-    
-    onTrainClick(e) {
-        const btn = e.target;
-        const soldierType = btn.dataset.soldier;
-        
-        if (!this.barracks) return;
-        
-        const result = this.barracks.train(soldierType);
-        
-        if (result.success) {
-            this.showToast(result.message);
-            this.buildPanel.updateResourceDisplay();
-        } else {
-            this.showToast(result.message);
-        }
     }
 
     startGameLoop() {

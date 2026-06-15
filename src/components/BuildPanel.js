@@ -544,6 +544,13 @@ export class BuildPanel {
     onBuildItemClick(e) {
         const item = e.target;
         const buildingType = item.dataset.type;
+        const soldierType = item.dataset.soldier;
+        
+        if (soldierType) {
+            this.onTrainSoldier(soldierType);
+            return;
+        }
+        
         const config = this.buildingTypes[buildingType];
         
         if (!config) {
@@ -573,6 +580,19 @@ export class BuildPanel {
         }
         
         this.selectBuilding(buildingType);
+    }
+    
+    onTrainSoldier(soldierType) {
+        if (!this.game.barracks) return;
+        
+        const result = this.game.barracks.train(soldierType);
+        
+        if (result.success) {
+            this.showSuccess(result.message);
+            this.updateResourceDisplay();
+        } else {
+            this.showError(result.message);
+        }
     }
     
     onBuildItemHover(e) {
@@ -728,22 +748,5 @@ export class BuildPanel {
             parts.push(`${emoji} ${value}`);
         }
         return parts.join(', ');
-    }
-    
-    updateSoldierDisplay() {
-        if (!this.game.barracks) return;
-        
-        const soldiers = this.game.barracks.getAllSoldiers();
-        const soldierInfo = this.game.barracks.getAllSoldierInfo();
-        
-        const infantryCount = document.getElementById('infantry-count');
-        const archerCount = document.getElementById('archer-count');
-        
-        if (infantryCount) {
-            infantryCount.textContent = soldiers.infantry || 0;
-        }
-        if (archerCount) {
-            archerCount.textContent = soldiers.archer || 0;
-        }
     }
 }
