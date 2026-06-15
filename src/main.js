@@ -197,8 +197,14 @@ export class Game {
         
         const terrainType = this.terrain.getTerrainType(mousePos.x, mousePos.y);
         
-        if (terrainType !== 'land') {
-            return;
+        if (buildingConfig.isDock) {
+            if (terrainType !== 'beach') {
+                return;
+            }
+        } else {
+            if (terrainType !== 'land') {
+                return;
+            }
         }
         
         const resources = this.storage.getResources();

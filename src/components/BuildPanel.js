@@ -311,18 +311,25 @@ export class BuildPanel {
         
         const alignedPos = this.snapToGrid(x, y, buildingConfig.size);
         
-        if (!this.isPositionOnLand(alignedPos.x, alignedPos.y)) {
-            this.showError('❌ 该位置不是草地！');
-            return;
+        if (buildingConfig.isDock) {
+            if (!this.isPositionOnBeach(alignedPos.x, alignedPos.y)) {
+                this.showError('❌ 码头只能建在沙滩上！');
+                return;
+            }
+        } else {
+            if (!this.isPositionOnLand(alignedPos.x, alignedPos.y)) {
+                this.showError('❌ 该位置不是草地！');
+                return;
+            }
+            
+            if (this.isOverlappingFarmArea(alignedPos.x, alignedPos.y, buildingConfig.size)) {
+                this.showError('❌ 无法在农田区域建造！');
+                return;
+            }
         }
         
         if (!this.isSpaceAvailable(alignedPos.x, alignedPos.y, buildingConfig.size)) {
             this.showError('❌ 该位置已有建筑！');
-            return;
-        }
-        
-        if (this.isOverlappingFarmArea(alignedPos.x, alignedPos.y, buildingConfig.size)) {
-            this.showError('❌ 无法在农田区域建造！');
             return;
         }
         
@@ -376,12 +383,17 @@ export class BuildPanel {
     isPositionOnLand(x, y) {
         if (!this.game.terrain) return false;
         
-        const landRadius = this.game.terrain.getLandRadius();
-        const center = this.game.terrain.getIslandCenter();
+        const terrainType = this.game.terrain.getTerrainType(x, y);
         
-        const distance = Math.sqrt(Math.pow(x - center.x, 2) + Math.pow(y - center.y, 2));
+        return terrainType === 'land';
+    }
+    
+    isPositionOnBeach(x, y) {
+        if (!this.game.terrain) return false;
         
-        return distance < landRadius;
+        const terrainType = this.game.terrain.getTerrainType(x, y);
+        
+        return terrainType === 'beach';
     }
     
     isOverlappingFarmArea(x, y, size) {
