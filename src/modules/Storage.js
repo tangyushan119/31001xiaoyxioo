@@ -101,8 +101,14 @@ export class Storage {
             try {
                 const data = JSON.parse(saved);
                 
-                if (data.resources) {
-                    this.resources = { ...this.resources, ...data.resources };
+                if (data.version && data.version >= 2) {
+                    if (data.resources) {
+                        this.resources = { ...this.resources, ...data.resources };
+                    }
+                } else {
+                    console.log('Detected old save data format, resetting to new defaults');
+                    this.resetToDefaults();
+                    return;
                 }
                 
                 this.buildings = data.buildings || [];
@@ -124,6 +130,7 @@ export class Storage {
 
     saveToLocalStorage() {
         const data = {
+            version: 2,
             resources: this.resources,
             buildings: this.buildings,
             farms: this.farms,
@@ -200,13 +207,26 @@ export class Storage {
 
     modifyResource(key, amount) {
         if (this.resources.hasOwnProperty(key)) {
-            const currentTotal = this.getTotalResourceAmount();
-            const otherResourcesTotal = currentTotal - (this.resources[key] || 0);
-            const maxCanAdd = this.storageCapacity - otherResourcesTotal;
-            const actualAmount = Math.min(amount, maxCanAdd);
-            this.resources[key] = Math.max(0, this.resources[key] + actualAmount);
-            this.saveToLocalStorage();
-            return actualAmount;
+            const currentValue = this.resources[key] || 0;
+            
+            if (amount > 0) {
+                const currentTotal = this.getTotalResourceAmount();
+                const otherResourcesTotal = currentTotal - currentValue;
+                const maxCanAdd = this.storageCapacity - otherResourcesTotal;
+                
+                if (maxCanAdd > 0) {
+                    const actualAmount = Math.min(amount, maxCanAdd);
+                    this.resources[key] = currentValue + actualAmount;
+                    this.saveToLocalStorage();
+                    return actualAmount;
+                } else {
+                    return 0;
+                }
+            } else {
+                this.resources[key] = Math.max(0, currentValue + amount);
+                this.saveToLocalStorage();
+                return amount;
+            }
         }
         return 0;
     }
