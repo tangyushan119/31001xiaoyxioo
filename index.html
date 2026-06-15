@@ -566,6 +566,180 @@
             border-color: #3b82f6;
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
         }
+
+        .ship-build-btn {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .ship-build-btn:hover {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .ship-build-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #sail-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 360px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sail-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sail-panel-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .section-title {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .ships-list, .destinations-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .ship-item, .destination-item {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ship-item:hover, .destination-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .ship-item.selected, .destination-item.selected {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .ship-item.disabled, .destination-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .ship-emoji, .destination-emoji {
+            font-size: 28px;
+        }
+
+        .ship-name, .destination-name {
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .destination-danger {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 3px;
+        }
+
+        .danger-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .danger-extreme {
+            background: rgba(236, 72, 153, 0.2);
+            color: #ec4899;
+        }
+
+        .sail-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+
+        .info-value {
+            color: #4ade80;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .sail-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sail-button:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .sail-button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .sail-requirement {
+            font-size: 11px;
+            color: #ef4444;
+            margin-top: 8px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -633,6 +807,20 @@
                 <div class="sub-items" data-category="barracks">
                     <div class="build-item soldier-train-btn" data-soldier="infantry" title="训练步兵 - 消耗: 20💰 + 10🌾">⚔️</div>
                     <div class="build-item soldier-train-btn" data-soldier="archer" title="训练弓箭手 - 消耗: 35💰 + 15🌾">🏹</div>
+                </div>
+            </div>
+            
+            <div class="category-group">
+                <button class="category-btn" data-category="dock">
+                    <span class="category-icon">⛵</span>
+                    <span class="category-name">码头</span>
+                    <span class="category-arrow">▶</span>
+                </button>
+                <div class="sub-items" data-category="dock">
+                    <div class="build-item" data-type="dock" draggable="true" title="码头 - 建造船只的必要设施\n消耗: 80🪵 + 40🪨">⛵</div>
+                    <div class="build-item ship-build-btn" data-ship="smallShip" title="小型船 - 消耗: 50🪵 + 20💎">🛶</div>
+                    <div class="build-item ship-build-btn" data-ship="largeShip" title="大型船 - 消耗: 120🪵 + 50💎 + 50💰">🚢</div>
+                    <div class="build-item ship-build-btn" data-ship="warShip" title="战船 - 消耗: 100🪵 + 80💎 + 80💰">⚓</div>
                 </div>
             </div>
             
@@ -713,6 +901,36 @@
     
     <div id="drag-overlay">
         <div class="drag-item" id="drag-preview"></div>
+    </div>
+
+    <div id="sail-panel" style="display: none;">
+        <div class="sail-panel-header">
+            <h3>🚢 远航</h3>
+            <button class="close-btn" onclick="document.getElementById('sail-panel').style.display = 'none'">×</button>
+        </div>
+        <div class="sail-ship-select">
+            <div class="section-title">选择船只</div>
+            <div class="ships-list" id="ships-list"></div>
+        </div>
+        <div class="sail-destinations">
+            <div class="section-title">选择目的地</div>
+            <div class="destinations-list" id="destinations-list"></div>
+        </div>
+        <div class="sail-info">
+            <div class="info-row">
+                <span class="info-label">粮食消耗:</span>
+                <span class="info-value" id="sail-food-cost">0 🌾</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">当前粮食:</span>
+                <span class="info-value" id="current-food">0 🌾</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">当前士兵:</span>
+                <span class="info-value" id="current-soldiers">0 ⚔️</span>
+            </div>
+        </div>
+        <button id="sail-btn" class="sail-button" disabled>⛵ 出发远航</button>
     </div>
 
     <script type="module" src="src/main.js"></script>

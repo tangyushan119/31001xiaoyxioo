@@ -125,6 +125,9 @@ export class BuildPanel {
         this.updateBuildItemStates();
         this.selectedBuilding = null;
         this.expandedCategory = null;
+        this.selectedShipId = null;
+        this.selectedDestinationId = null;
+        this.currentFoodCost = 0;
     }
 
     setupEventListeners() {
@@ -507,8 +510,11 @@ export class BuildPanel {
         const resources = this.game.storage.getResources();
         const buildItems = this.panel.querySelectorAll('.build-item');
         
+        const hasDock = this.hasDock();
+        
         buildItems.forEach(item => {
             const type = item.dataset.type;
+            const shipType = item.dataset.ship;
             const config = this.buildingTypes[type];
             
             if (config) {
@@ -530,7 +536,42 @@ export class BuildPanel {
                     item.style.cursor = 'not-allowed';
                 }
             }
+            
+            if (shipType) {
+                const dock = this.game.dock;
+                if (!dock) {
+                    item.classList.add('disabled');
+                    item.style.cursor = 'not-allowed';
+                    return;
+                }
+                
+                const shipConfig = dock.shipTypes[shipType];
+                if (!shipConfig) return;
+                
+                let canBuildShip = hasDock;
+                if (canBuildShip) {
+                    for (const [key, value] of Object.entries(shipConfig.cost)) {
+                        if ((resources[key] || 0) < value) {
+                            canBuildShip = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if (canBuildShip) {
+                    item.classList.remove('disabled');
+                    item.style.cursor = 'pointer';
+                } else {
+                    item.classList.add('disabled');
+                    item.style.cursor = 'not-allowed';
+                }
+            }
         });
+    }
+    
+    hasDock() {
+        const buildings = this.game.storage.getBuildings();
+        return buildings.some(b => b.type === 'dock');
     }
 
     onResetClick() {
@@ -597,10 +638,173 @@ export class BuildPanel {
             return;
         }
         
+        const hasDock = this.hasDock();
+        if (!hasDock) {
+            this.showError('❌ 需要先建造码头！');
+            return;
+        }
+        
         const result = this.game.dock.buildShip(shipType);
         
         if (result.success) {
             this.showSuccess(result.message);
+            this.updateResourceDisplay();
+            this.updateBuildItemStates();
+            this.showSailPanel();
+        } else {
+            this.showError(result.message);
+        }
+    }
+    
+    showSailPanel() {
+        const sailPanel = document.getElementById('sail-panel');
+        if (!sailPanel) return;
+        
+        this.updateSailPanel();
+        sailPanel.style.display = 'block';
+    }
+    
+    updateSailPanel() {
+        const dock = this.game.dock;
+        const storage = this.game.storage;
+        const barracks = this.game.barracks;
+        
+        if (!dock || !storage || !barracks) return;
+        
+        const shipsList = document.getElementById('ships-list');
+        const destinationsList = document.getElementById('destinations-list');
+        const foodCostElement = document.getElementById('sail-food-cost');
+        const currentFoodElement = document.getElementById('current-food');
+        const currentSoldiersElement = document.getElementById('current-soldiers');
+        const sailBtn = document.getElementById('sail-btn');
+        
+        const ships = dock.getDockedShips();
+        const destinations = dock.getDestinations();
+        const wheat = storage.getResource('wheatHarvest');
+        const totalSoldiers = barracks.getTotalSoldiers();
+        
+        shipsList.innerHTML = '';
+        ships.forEach(ship => {
+            const shipItem = document.createElement('div');
+            shipItem.className = 'ship-item';
+            shipItem.dataset.shipId = ship.id;
+            shipItem.innerHTML = `
+                <span class="ship-emoji">${ship.emoji}</span>
+                <span class="ship-name">${ship.name}</span>
+            `;
+            shipItem.addEventListener('click', () => this.selectSailShip(ship.id));
+            shipsList.appendChild(shipItem);
+        });
+        
+        destinationsList.innerHTML = '';
+        Object.entries(destinations).forEach(([id, dest]) => {
+            if (id === 'home') return;
+            
+            const destItem = document.createElement('div');
+            destItem.className = 'destination-item';
+            destItem.dataset.destinationId = id;
+            
+            let dangerHtml = '';
+            if (dest.dangerLevel) {
+                dangerHtml = `<span class="destination-danger danger-${dest.dangerLevel}">${dest.dangerLevel === 'high' ? '⚠️ 危险' : '☠️ 极危'}</span>`;
+            }
+            
+            destItem.innerHTML = `
+                <span class="destination-emoji">${dest.emoji}</span>
+                <span class="destination-name">${dest.name}</span>
+                ${dangerHtml}
+            `;
+            
+            const canAfford = wheat >= dock.getFoodConsumption(id);
+            const hasRequiredSoldiers = !dest.requiresSoldiers || totalSoldiers >= 1;
+            
+            if (!canAfford || !hasRequiredSoldiers) {
+                destItem.classList.add('disabled');
+            }
+            
+            destItem.addEventListener('click', () => this.selectSailDestination(id));
+            destinationsList.appendChild(destItem);
+        });
+        
+        currentFoodElement.textContent = `${wheat} 🌾`;
+        currentSoldiersElement.textContent = `${totalSoldiers} ⚔️`;
+        
+        sailBtn.disabled = true;
+        sailBtn.onclick = null;
+        
+        this.selectedShipId = null;
+        this.selectedDestinationId = null;
+        this.currentFoodCost = 0;
+        foodCostElement.textContent = '0 🌾';
+    }
+    
+    selectSailShip(shipId) {
+        const shipItems = document.querySelectorAll('.ship-item');
+        shipItems.forEach(item => item.classList.remove('selected'));
+        
+        const selectedItem = document.querySelector(`[data-ship-id="${shipId}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
+        }
+        
+        this.selectedShipId = shipId;
+        this.updateSailButton();
+    }
+    
+    selectSailDestination(destinationId) {
+        const destItems = document.querySelectorAll('.destination-item');
+        destItems.forEach(item => item.classList.remove('selected'));
+        
+        const selectedItem = document.querySelector(`[data-destination-id="${destinationId}"]`);
+        if (selectedItem && !selectedItem.classList.contains('disabled')) {
+            selectedItem.classList.add('selected');
+            this.selectedDestinationId = destinationId;
+            
+            const foodCost = this.game.dock.getFoodConsumption(destinationId);
+            this.currentFoodCost = foodCost;
+            document.getElementById('sail-food-cost').textContent = `${foodCost} 🌾`;
+        } else {
+            this.selectedDestinationId = null;
+            this.currentFoodCost = 0;
+            document.getElementById('sail-food-cost').textContent = '0 🌾';
+        }
+        
+        this.updateSailButton();
+    }
+    
+    updateSailButton() {
+        const sailBtn = document.getElementById('sail-btn');
+        const dock = this.game.dock;
+        const storage = this.game.storage;
+        const barracks = this.game.barracks;
+        
+        if (!this.selectedShipId || !this.selectedDestinationId) {
+            sailBtn.disabled = true;
+            sailBtn.onclick = null;
+            return;
+        }
+        
+        const canSailResult = dock.canSail(this.selectedDestinationId, this.selectedShipId);
+        
+        if (canSailResult.canSail) {
+            sailBtn.disabled = false;
+            sailBtn.onclick = () => this.startSail();
+        } else {
+            sailBtn.disabled = true;
+            sailBtn.onclick = null;
+        }
+    }
+    
+    startSail() {
+        const dock = this.game.dock;
+        
+        if (!this.selectedShipId || !this.selectedDestinationId) return;
+        
+        const result = dock.startSail(this.selectedDestinationId, this.selectedShipId);
+        
+        if (result.success) {
+            this.showSuccess(result.message);
+            document.getElementById('sail-panel').style.display = 'none';
             this.updateResourceDisplay();
         } else {
             this.showError(result.message);
