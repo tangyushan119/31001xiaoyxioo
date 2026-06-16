@@ -2,6 +2,7 @@ export class InventoryPanel {
     constructor(game) {
         this.game = game;
         this.panel = null;
+        this.overlay = null;
         this.tooltip = null;
         this.activeCategory = 'all';
         
@@ -9,10 +10,19 @@ export class InventoryPanel {
     }
     
     init() {
+        this.createOverlay();
         this.createPanel();
         this.createTooltip();
         this.setupEventListeners();
         this.updateInventory();
+    }
+    
+    createOverlay() {
+        const overlay = document.createElement('div');
+        overlay.id = 'inventory-overlay';
+        overlay.className = 'inventory-overlay';
+        document.body.appendChild(overlay);
+        this.overlay = overlay;
     }
     
     createPanel() {
@@ -112,6 +122,9 @@ export class InventoryPanel {
     }
     
     show() {
+        if (this.overlay) {
+            this.overlay.style.display = 'block';
+        }
         this.panel.style.display = 'block';
         this.updateInventory();
         this.centerPanel();
@@ -134,6 +147,9 @@ export class InventoryPanel {
     }
     
     hide() {
+        if (this.overlay) {
+            this.overlay.style.display = 'none';
+        }
         this.panel.style.display = 'none';
     }
     
@@ -255,6 +271,9 @@ export class InventoryPanel {
     }
     
     destroy() {
+        if (this.overlay) {
+            this.overlay.remove();
+        }
         if (this.panel) {
             this.panel.remove();
         }

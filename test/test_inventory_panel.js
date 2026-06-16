@@ -58,7 +58,7 @@ function setupTestEnvironment() {
 }
 
 function runTests() {
-    console.log('=== 仓库弹窗居中测试 ===\n');
+    console.log('=== 仓库弹窗测试 ===\n');
     
     const { container, canvas } = setupTestEnvironment();
     
@@ -71,12 +71,19 @@ function runTests() {
         console.log(`   - 初始display状态: ${panel.style.display}`);
         console.assert(panel.style.display === 'none', '弹窗初始状态应该为隐藏');
         
-        console.log('\n2. 测试show()方法显示弹窗');
-        inventoryPanel.show();
-        console.log(`   - show()后display状态: ${panel.style.display}`);
-        console.assert(panel.style.display === 'block', '弹窗show后应该显示');
+        console.log('\n2. 测试遮罩层初始状态（应隐藏）');
+        const overlay = document.getElementById('inventory-overlay');
+        console.log(`   - 遮罩层初始display状态: ${overlay.style.display}`);
+        console.assert(overlay.style.display === 'none', '遮罩层初始状态应该为隐藏');
         
-        console.log('\n3. 测试弹窗居中位置');
+        console.log('\n3. 测试show()方法显示弹窗和遮罩层');
+        inventoryPanel.show();
+        console.log(`   - show()后弹窗display状态: ${panel.style.display}`);
+        console.log(`   - show()后遮罩层display状态: ${overlay.style.display}`);
+        console.assert(panel.style.display === 'block', '弹窗show后应该显示');
+        console.assert(overlay.style.display === 'block', '遮罩层show后应该显示');
+        
+        console.log('\n4. 测试弹窗居中位置');
         const canvasRect = canvas.getBoundingClientRect();
         const panelRect = panel.getBoundingClientRect();
         
@@ -99,19 +106,59 @@ function runTests() {
         console.assert(leftDiff < 1, `水平位置偏差过大: ${leftDiff}px`);
         console.assert(topDiff < 1, `垂直位置偏差过大: ${topDiff}px`);
         
-        console.log('\n4. 测试hide()方法隐藏弹窗');
+        console.log('\n5. 测试遮罩层样式属性');
+        console.log(`   - 遮罩层position: ${overlay.style.position}`);
+        console.log(`   - 遮罩层zIndex: ${overlay.style.zIndex}`);
+        console.log(`   - 遮罩层pointerEvents: ${overlay.style.pointerEvents}`);
+        console.assert(overlay.style.position === 'fixed' || getComputedStyle(overlay).position === 'fixed', '遮罩层应该使用fixed定位');
+        
+        console.log('\n6. 测试hide()方法隐藏弹窗和遮罩层');
         inventoryPanel.hide();
-        console.log(`   - hide()后display状态: ${panel.style.display}`);
+        console.log(`   - hide()后弹窗display状态: ${panel.style.display}`);
+        console.log(`   - hide()后遮罩层display状态: ${overlay.style.display}`);
         console.assert(panel.style.display === 'none', '弹窗hide后应该隐藏');
+        console.assert(overlay.style.display === 'none', '遮罩层hide后应该隐藏');
         
-        console.log('\n5. 测试toggle()方法切换状态');
+        console.log('\n7. 测试toggle()方法切换状态');
         inventoryPanel.toggle();
-        console.log(`   - toggle()第一次后display状态: ${panel.style.display}`);
+        console.log(`   - toggle()第一次后弹窗display状态: ${panel.style.display}`);
+        console.log(`   - toggle()第一次后遮罩层display状态: ${overlay.style.display}`);
         console.assert(panel.style.display === 'block', 'toggle()第一次应该显示弹窗');
+        console.assert(overlay.style.display === 'block', 'toggle()第一次应该显示遮罩层');
         
         inventoryPanel.toggle();
-        console.log(`   - toggle()第二次后display状态: ${panel.style.display}`);
+        console.log(`   - toggle()第二次后弹窗display状态: ${panel.style.display}`);
+        console.log(`   - toggle()第二次后遮罩层display状态: ${overlay.style.display}`);
         console.assert(panel.style.display === 'none', 'toggle()第二次应该隐藏弹窗');
+        console.assert(overlay.style.display === 'none', 'toggle()第二次应该隐藏遮罩层');
+        
+        console.log('\n8. 测试遮罩层阻断点击事件');
+        inventoryPanel.show();
+        let canvasClicked = false;
+        canvas.addEventListener('click', () => {
+            canvasClicked = true;
+        });
+        
+        const overlayRect = overlay.getBoundingClientRect();
+        const clickEvent = new MouseEvent('click', {
+            clientX: overlayRect.left + overlayRect.width / 2,
+            clientY: overlayRect.top + overlayRect.height / 2,
+            bubbles: true
+        });
+        overlay.dispatchEvent(clickEvent);
+        
+        console.log(`   - 点击遮罩层后canvas是否被点击: ${canvasClicked}`);
+        console.assert(!canvasClicked, '遮罩层应该阻断canvas点击');
+        
+        canvas.removeEventListener('click', () => { canvasClicked = true; });
+        
+        inventoryPanel.hide();
+        
+        console.log('\n9. 测试弹窗背景是否为非透明');
+        const computedStyle = getComputedStyle(panel);
+        const bgColor = computedStyle.backgroundColor;
+        console.log(`   - 弹窗背景色: ${bgColor}`);
+        console.assert(bgColor !== 'rgba(255, 255, 255, 0.1)', '弹窗背景不应该是透明效果');
         
         container.remove();
         

@@ -34,19 +34,31 @@
             display: block;
         }
         
+        .inventory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 99;
+            display: none;
+            pointer-events: auto;
+        }
+
         .inventory-panel {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 280px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            background: #1e293b;
             border-radius: 12px;
             padding: 15px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 100;
             display: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .inventory-header {
@@ -280,7 +292,7 @@
         
         function runTests() {
             clearOutput();
-            log('=== 仓库弹窗居中测试 ===\n');
+            log('=== 仓库弹窗测试 ===\n');
             
             setTimeout(async () => {
                 try {
@@ -296,16 +308,26 @@
                         log('   ❌ 失败 - 弹窗初始状态应该为隐藏', 'error');
                     }
                     
-                    log('\n2. 测试show()方法显示弹窗');
-                    inventoryPanel.show();
-                    log(`   - show()后display状态: ${panel.style.display}`);
-                    if (panel.style.display === 'block') {
+                    log('\n2. 测试遮罩层初始状态（应隐藏）');
+                    const overlay = document.getElementById('inventory-overlay');
+                    log(`   - 遮罩层初始display状态: ${overlay.style.display}`);
+                    if (overlay.style.display === 'none') {
                         log('   ✅ 通过', 'success');
                     } else {
-                        log('   ❌ 失败 - 弹窗show后应该显示', 'error');
+                        log('   ❌ 失败 - 遮罩层初始状态应该为隐藏', 'error');
                     }
                     
-                    log('\n3. 测试弹窗居中位置');
+                    log('\n3. 测试show()方法显示弹窗和遮罩层');
+                    inventoryPanel.show();
+                    log(`   - show()后弹窗display状态: ${panel.style.display}`);
+                    log(`   - show()后遮罩层display状态: ${overlay.style.display}`);
+                    if (panel.style.display === 'block' && overlay.style.display === 'block') {
+                        log('   ✅ 通过', 'success');
+                    } else {
+                        log('   ❌ 失败 - show后弹窗和遮罩层都应该显示', 'error');
+                    }
+                    
+                    log('\n4. 测试弹窗居中位置');
                     const canvas = document.getElementById('game-canvas');
                     const canvasRect = canvas.getBoundingClientRect();
                     const panelRect = panel.getBoundingClientRect();
@@ -332,30 +354,78 @@
                         log(`   ❌ 失败 - 位置偏差过大`, 'error');
                     }
                     
-                    log('\n4. 测试hide()方法隐藏弹窗');
+                    log('\n5. 测试遮罩层样式属性');
+                    const overlayStyle = getComputedStyle(overlay);
+                    log(`   - 遮罩层position: ${overlayStyle.position}`);
+                    log(`   - 遮罩层zIndex: ${overlayStyle.zIndex}`);
+                    if (overlayStyle.position === 'fixed' && parseInt(overlayStyle.zIndex) === 99) {
+                        log('   ✅ 通过', 'success');
+                    } else {
+                        log('   ❌ 失败 - 遮罩层样式属性不正确', 'error');
+                    }
+                    
+                    log('\n6. 测试hide()方法隐藏弹窗和遮罩层');
                     inventoryPanel.hide();
-                    log(`   - hide()后display状态: ${panel.style.display}`);
-                    if (panel.style.display === 'none') {
+                    log(`   - hide()后弹窗display状态: ${panel.style.display}`);
+                    log(`   - hide()后遮罩层display状态: ${overlay.style.display}`);
+                    if (panel.style.display === 'none' && overlay.style.display === 'none') {
                         log('   ✅ 通过', 'success');
                     } else {
-                        log('   ❌ 失败 - 弹窗hide后应该隐藏', 'error');
+                        log('   ❌ 失败 - hide后弹窗和遮罩层都应该隐藏', 'error');
                     }
                     
-                    log('\n5. 测试toggle()方法切换状态');
+                    log('\n7. 测试toggle()方法切换状态');
                     inventoryPanel.toggle();
-                    log(`   - toggle()第一次后display状态: ${panel.style.display}`);
-                    if (panel.style.display === 'block') {
+                    log(`   - toggle()第一次后弹窗display状态: ${panel.style.display}`);
+                    log(`   - toggle()第一次后遮罩层display状态: ${overlay.style.display}`);
+                    if (panel.style.display === 'block' && overlay.style.display === 'block') {
                         log('   ✅ 通过', 'success');
                     } else {
-                        log('   ❌ 失败 - toggle()第一次应该显示弹窗', 'error');
+                        log('   ❌ 失败 - toggle()第一次应该显示弹窗和遮罩层', 'error');
                     }
                     
                     inventoryPanel.toggle();
-                    log(`   - toggle()第二次后display状态: ${panel.style.display}`);
-                    if (panel.style.display === 'none') {
+                    log(`   - toggle()第二次后弹窗display状态: ${panel.style.display}`);
+                    log(`   - toggle()第二次后遮罩层display状态: ${overlay.style.display}`);
+                    if (panel.style.display === 'none' && overlay.style.display === 'none') {
                         log('   ✅ 通过', 'success');
                     } else {
-                        log('   ❌ 失败 - toggle()第二次应该隐藏弹窗', 'error');
+                        log('   ❌ 失败 - toggle()第二次应该隐藏弹窗和遮罩层', 'error');
+                    }
+                    
+                    log('\n8. 测试遮罩层阻断点击事件');
+                    inventoryPanel.show();
+                    let canvasClicked = false;
+                    canvas.addEventListener('click', () => {
+                        canvasClicked = true;
+                    });
+                    
+                    const overlayRect = overlay.getBoundingClientRect();
+                    const clickEvent = new MouseEvent('click', {
+                        clientX: overlayRect.left + overlayRect.width / 2,
+                        clientY: overlayRect.top + overlayRect.height / 2,
+                        bubbles: true
+                    });
+                    overlay.dispatchEvent(clickEvent);
+                    
+                    log(`   - 点击遮罩层后canvas是否被点击: ${canvasClicked}`);
+                    if (!canvasClicked) {
+                        log('   ✅ 通过', 'success');
+                    } else {
+                        log('   ❌ 失败 - 遮罩层应该阻断canvas点击', 'error');
+                    }
+                    
+                    canvas.removeEventListener('click', () => { canvasClicked = true; });
+                    inventoryPanel.hide();
+                    
+                    log('\n9. 测试弹窗背景是否为非透明');
+                    const panelStyle = getComputedStyle(panel);
+                    const bgColor = panelStyle.backgroundColor;
+                    log(`   - 弹窗背景色: ${bgColor}`);
+                    if (bgColor !== 'rgba(255, 255, 255, 0.1)') {
+                        log('   ✅ 通过', 'success');
+                    } else {
+                        log('   ❌ 失败 - 弹窗背景不应该是透明效果', 'error');
                     }
                     
                     log('\n✅ 所有测试完成！');
