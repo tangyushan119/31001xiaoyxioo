@@ -10,6 +10,9 @@ export class PlayerMovement {
     }
 
     handleBuildingInteractions() {
+        const inventoryPanel = this.game.getInventoryPanel();
+        if (inventoryPanel && inventoryPanel.isVisible()) return;
+
         const player = this.game.getPlayer();
         const storage = this.game.getStorage();
         const input = this.game.getInput();
@@ -42,6 +45,9 @@ export class PlayerMovement {
     }
 
     handlePlotInteractions() {
+        const inventoryPanel = this.game.getInventoryPanel();
+        if (inventoryPanel && inventoryPanel.isVisible()) return;
+
         const input = this.game.getInput();
         if (!input.wasClicked()) return;
 

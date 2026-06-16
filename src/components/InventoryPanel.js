@@ -153,6 +153,10 @@ export class InventoryPanel {
         this.panel.style.display = 'none';
     }
     
+    isVisible() {
+        return this.panel.style.display !== 'none';
+    }
+    
     updateInventory() {
         this.updateCategoryTabs();
         this.updateStorageBar();
