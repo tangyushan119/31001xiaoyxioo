@@ -36,6 +36,7 @@ export class DockPlacementTest {
 
         this.testDockBuildingType();
         this.testDockPlacementOnBeach();
+        this.testDockCannotPlaceOnInnerBeach();
         this.testDockPlacementOnLand();
         this.testDockCannotPlaceOnWater();
         this.testDockClickOpensShipBuilding();
@@ -63,7 +64,7 @@ export class DockPlacementTest {
     }
 
     testDockPlacementOnBeach() {
-        this.logTest('码头沙滩放置测试');
+        this.logTest('码头沙滩放置测试（靠近水边区域）');
         
         if (window.game && window.game.buildPanel) {
             const terrain = window.game.getTerrain();
@@ -71,14 +72,16 @@ export class DockPlacementTest {
             const storage = window.game.getStorage();
             
             const center = terrain.getIslandCenter();
-            const landRadius = terrain.getLandRadius();
             const beachOuterRadius = terrain.getBeachOuterRadius();
             
-            const beachX = center.x + (landRadius + beachOuterRadius) / 2 * Math.cos(-Math.PI / 2);
-            const beachY = center.y + (landRadius + beachOuterRadius) / 2 * Math.sin(-Math.PI / 2);
+            const dockZoneX = center.x + beachOuterRadius * 0.95 * Math.cos(-Math.PI / 2);
+            const dockZoneY = center.y + beachOuterRadius * 0.95 * Math.sin(-Math.PI / 2);
             
-            const terrainType = terrain.getTerrainType(beachX, beachY);
+            const terrainType = terrain.getTerrainType(dockZoneX, dockZoneY);
             this.assertEqual(terrainType, 'beach', '测试点位于沙滩');
+            
+            const canBuildDock = terrain.canBuildDockOnBeachAt(dockZoneX, dockZoneY);
+            this.assert(canBuildDock, '测试点位于沙滩可放置区域');
             
             const originalWood = storage.getResource('wood');
             const originalStone = storage.getResource('stone');
@@ -86,9 +89,9 @@ export class DockPlacementTest {
             storage.modifyResource('wood', 100);
             storage.modifyResource('stone', 50);
             
-            const result = buildPanel.tryPlaceBuilding('dock', beachX, beachY);
+            const result = buildPanel.tryPlaceBuilding('dock', dockZoneX, dockZoneY);
             
-            this.assert(result === true, '码头可在沙滩上建造');
+            this.assert(result === true, '码头可在沙滩靠近水边区域建造');
             
             const buildings = storage.getBuildings();
             const dock = buildings.find(b => b.type === 'dock');
@@ -100,6 +103,48 @@ export class DockPlacementTest {
             storage.modifyResource('stone', originalStone - storage.getResource('stone'));
         } else {
             console.log('⚠️ 游戏未加载，跳过沙滩放置测试');
+        }
+    }
+
+    testDockCannotPlaceOnInnerBeach() {
+        this.logTest('码头不可在沙滩内侧区域建造测试');
+        
+        if (window.game && window.game.buildPanel) {
+            const terrain = window.game.getTerrain();
+            const buildPanel = window.game.buildPanel;
+            const storage = window.game.getStorage();
+            
+            const center = terrain.getIslandCenter();
+            const landRadius = terrain.getLandRadius();
+            const beachOuterRadius = terrain.getBeachOuterRadius();
+            
+            const innerBeachX = center.x + (landRadius + (beachOuterRadius - landRadius) * 0.2) * Math.cos(-Math.PI / 2);
+            const innerBeachY = center.y + (landRadius + (beachOuterRadius - landRadius) * 0.2) * Math.sin(-Math.PI / 2);
+            
+            const terrainType = terrain.getTerrainType(innerBeachX, innerBeachY);
+            this.assertEqual(terrainType, 'beach', '测试点位于沙滩');
+            
+            const canBuildDock = terrain.canBuildDockOnBeachAt(innerBeachX, innerBeachY);
+            this.assert(!canBuildDock, '测试点位于沙滩不可放置区域');
+            
+            const originalWood = storage.getResource('wood');
+            const originalStone = storage.getResource('stone');
+            
+            storage.modifyResource('wood', 100);
+            storage.modifyResource('stone', 50);
+            
+            const result = buildPanel.tryPlaceBuilding('dock', innerBeachX, innerBeachY);
+            
+            this.assertEqual(result, undefined, '码头不可在沙滩内侧区域建造');
+            
+            const buildings = storage.getBuildings();
+            const dockCount = buildings.filter(b => b.type === 'dock').length;
+            this.assertEqual(dockCount, 0, '沙滩内侧区域未创建码头');
+            
+            storage.modifyResource('wood', originalWood - storage.getResource('wood'));
+            storage.modifyResource('stone', originalStone - storage.getResource('stone'));
+        } else {
+            console.log('⚠️ 游戏未加载，跳过沙滩内侧区域测试');
         }
     }
 

@@ -410,12 +410,25 @@ export class Dock {
         if (dockedShips.length === 0) return;
         
         const dock = docks[0];
-        const seaOffset = 50;
-        const spacing = 55;
+        const terrain = this.game.terrain;
+        const center = terrain.getIslandCenter();
+        const beachOuterRadius = terrain.getBeachOuterRadius();
+        
+        const dx = dock.x - center.x;
+        const dy = dock.y - center.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+        
+        const seaStartRadius = beachOuterRadius + 20;
+        const shipRadius = seaStartRadius + 40;
+        
+        const spacingAngle = 0.15;
+        const startAngle = angle - spacingAngle * (dockedShips.length - 1) / 2;
         
         dockedShips.forEach((ship, index) => {
-            const x = dock.x + seaOffset + index * spacing;
-            const y = dock.y;
+            const shipAngle = startAngle + index * spacingAngle;
+            const x = center.x + Math.cos(shipAngle) * shipRadius;
+            const y = center.y + Math.sin(shipAngle) * shipRadius;
             
             ctx.save();
             

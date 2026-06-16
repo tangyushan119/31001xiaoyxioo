@@ -77,6 +77,28 @@ export class Terrain {
         return this.isOnLand(x, y);
     }
 
+    canBuildDockOnBeachAt(x, y) {
+        if (!this.isOnBeach(x, y)) return false;
+        
+        const distance = Math.sqrt(Math.pow(x - this.centerX, 2) + Math.pow(y - this.centerY, 2));
+        const beachInnerRadius = this.landRadius;
+        const beachOuterRadius = this.beachOuterRadius;
+        
+        const dockZoneWidth = (beachOuterRadius - beachInnerRadius) * 0.6;
+        const dockZoneStartRadius = beachOuterRadius - dockZoneWidth;
+        
+        return distance >= dockZoneStartRadius;
+    }
+
+    isInDockZone(x, y) {
+        const distance = Math.sqrt(Math.pow(x - this.centerX, 2) + Math.pow(y - this.centerY, 2));
+        const beachOuterRadius = this.beachOuterRadius;
+        const dockZoneWidth = (beachOuterRadius - this.landRadius) * 0.6;
+        const dockZoneStartRadius = beachOuterRadius - dockZoneWidth;
+        
+        return distance >= dockZoneStartRadius && distance <= beachOuterRadius + 30;
+    }
+
     getIslandCenter() {
         return { x: this.centerX, y: this.centerY };
     }

@@ -272,6 +272,10 @@ export class BuildPanel {
                 this.showError('❌ 无法在水中建造码头！');
                 return;
             }
+            if (terrainType === 'beach' && !this.game.terrain.canBuildDockOnBeachAt(x, y)) {
+                this.showError('❌ 码头只能建造在靠近水边的沙滩区域！');
+                return;
+            }
         } else {
             if (terrainType === 'beach') {
                 this.showError('❌ 沙滩上只能建造码头！');
@@ -310,6 +314,10 @@ export class BuildPanel {
             const dockTerrainType = this.game.terrain.getTerrainType(alignedPos.x, alignedPos.y);
             if (dockTerrainType === 'water') {
                 this.showError('❌ 无法在水中建造码头！');
+                return;
+            }
+            if (dockTerrainType === 'beach' && !this.game.terrain.canBuildDockOnBeachAt(alignedPos.x, alignedPos.y)) {
+                this.showError('❌ 码头只能建造在靠近水边的沙滩区域！');
                 return;
             }
         } else {
