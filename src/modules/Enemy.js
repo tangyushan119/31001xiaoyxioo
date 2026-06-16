@@ -153,12 +153,35 @@ export class Enemy {
         this.isAttacking = true;
         
         if (this.target.type === 'building') {
-            const result = this.game.storage.damageBuilding(this.target.id, this.attackDamage);
-            if (result && result.destroyed) {
-                this.game.showToast(`💥 敌军摧毁了建筑！`);
-                this.target = null;
+            const building = this.game.storage.getBuildingById(this.target.id);
+            
+            if (building && building.isTurret && this.game.turretManager) {
+                const turret = this.game.turretManager.getTurretById(this.target.id);
+                if (turret) {
+                    turret.takeDamage(this.attackDamage);
+                    
+                    if (turret.health <= 0) {
+                        this.game.turretManager.removeTurret(this.target.id);
+                        this.game.showToast(`💥 敌军摧毁了炮塔！`);
+                        this.target = null;
+                    } else {
+                        this.game.showToast(`⚔️ 敌军攻击炮塔！`);
+                    }
+                } else {
+                    const result = this.game.storage.damageBuilding(this.target.id, this.attackDamage);
+                    if (result && result.destroyed) {
+                        this.game.showToast(`💥 敌军摧毁了建筑！`);
+                        this.target = null;
+                    }
+                }
             } else {
-                this.game.showToast(`💥 敌军攻击建筑！`);
+                const result = this.game.storage.damageBuilding(this.target.id, this.attackDamage);
+                if (result && result.destroyed) {
+                    this.game.showToast(`💥 敌军摧毁了建筑！`);
+                    this.target = null;
+                } else {
+                    this.game.showToast(`⚔️ 敌军攻击建筑！`);
+                }
             }
         } else if (this.target.type === 'farm') {
             this.game.storage.destroyCrop(this.target.id);

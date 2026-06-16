@@ -90,7 +90,7 @@ export class TurretManager {
     
     getTurretTypes() {
         return [
-            { type: 'machineGun', name: '机枪炮塔', emoji: '🔫' },
+            { type: 'machineGun', name: '堡垒炮塔', emoji: '🏰' },
             { type: 'catapult', name: '投石炮塔', emoji: '🪨' }
         ];
     }

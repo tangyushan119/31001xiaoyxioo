@@ -30,30 +30,32 @@ export class Turret {
     getTurretConfig(type) {
         const configs = {
             machineGun: {
-                name: '机枪炮塔',
-                emoji: '🔫',
-                size: 45,
-                health: 150,
-                attackRange: 180,
-                attackDamage: 15,
-                attackInterval: 0.3,
-                projectileSpeed: 8,
-                projectileColor: '#ff4444',
-                projectileSize: 5,
-                bulletSpread: 0.15
+                name: '堡垒炮塔',
+                emoji: '🏰',
+                size: 50,
+                health: 300,
+                attackRange: 200,
+                attackDamage: 20,
+                attackInterval: 0.25,
+                projectileSpeed: 12,
+                projectileColor: '#ff6b35',
+                projectileSize: 6,
+                bulletSpread: 0,
+                refund: { wood: 20, stone: 17 }
             },
             catapult: {
                 name: '投石炮塔',
                 emoji: '🪨',
-                size: 55,
-                health: 200,
-                attackRange: 250,
-                attackDamage: 45,
-                attackInterval: 1.5,
-                projectileSpeed: 4,
+                size: 40,
+                health: 250,
+                attackRange: 280,
+                attackDamage: 50,
+                attackInterval: 1.8,
+                projectileSpeed: 5,
                 projectileColor: '#8b7355',
-                projectileSize: 12,
-                bulletSpread: 0
+                projectileSize: 10,
+                bulletSpread: 0,
+                refund: { wood: 30, stone: 25 }
             }
         };
         
@@ -126,7 +128,7 @@ export class Turret {
     }
     
     fireBullets() {
-        const bulletCount = 3;
+        const bulletCount = 2;
         const target = this.target;
         
         for (let i = 0; i < bulletCount; i++) {
@@ -137,20 +139,18 @@ export class Turret {
                 const dy = target.y - this.y;
                 const angle = Math.atan2(dy, dx);
                 
-                const spread = (Math.random() - 0.5) * this.config.bulletSpread * 2;
-                
                 const projectile = {
                     x: this.x,
                     y: this.y,
-                    vx: Math.cos(angle + spread) * this.config.projectileSpeed,
-                    vy: Math.sin(angle + spread) * this.config.projectileSpeed,
+                    vx: Math.cos(angle) * this.config.projectileSpeed,
+                    vy: Math.sin(angle) * this.config.projectileSpeed,
                     color: this.config.projectileColor,
                     size: this.config.projectileSize,
                     damage: Math.floor(this.config.attackDamage / bulletCount)
                 };
                 
                 this.projectiles.push(projectile);
-            }, i * 50);
+            }, i * 30);
         }
     }
     
@@ -241,7 +241,20 @@ export class Turret {
     
     destroy() {
         this.game.storage.removeBuilding(this.id);
-        this.game.showToast(`💥 ${this.name} 被摧毁了！`);
+        
+        if (this.config.refund) {
+            let refundText = '';
+            for (const [resource, amount] of Object.entries(this.config.refund)) {
+                this.game.resourceManager.addResource(resource, amount);
+                const resourceInfo = this.game.storage.getResourceInfo(resource);
+                const emoji = resourceInfo ? resourceInfo.emoji : '❓';
+                const name = resourceInfo ? resourceInfo.name : resource;
+                refundText += `${emoji} ${name} ${amount} `;
+            }
+            this.game.showToast(`💥 ${this.name} 被摧毁了！回收 ${refundText}`);
+        } else {
+            this.game.showToast(`💥 ${this.name} 被摧毁了！`);
+        }
     }
     
     render(ctx) {

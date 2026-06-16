@@ -81,28 +81,28 @@ export class BuildPanel {
                 maxHealth: 180
             },
             machineGun: {
-                name: '机枪炮塔',
-                emoji: '🔫',
+                name: '堡垒炮塔',
+                emoji: '🏰',
                 cost: { wood: 40, stone: 35 },
-                size: 45,
-                health: 150,
-                maxHealth: 150,
+                size: 50,
+                health: 300,
+                maxHealth: 300,
                 isTurret: true,
-                attackRange: 180,
-                attackDamage: 15,
-                attackInterval: 0.3
+                attackRange: 200,
+                attackDamage: 20,
+                attackInterval: 0.25
             },
             catapult: {
                 name: '投石炮塔',
                 emoji: '🪨',
                 cost: { wood: 60, stone: 50 },
-                size: 55,
-                health: 200,
-                maxHealth: 200,
+                size: 40,
+                health: 250,
+                maxHealth: 250,
                 isTurret: true,
-                attackRange: 250,
-                attackDamage: 45,
-                attackInterval: 1.5
+                attackRange: 280,
+                attackDamage: 50,
+                attackInterval: 1.8
             },
             dock: {
                 name: '码头',
