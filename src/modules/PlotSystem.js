@@ -1,0 +1,288 @@
+export class PlotSystem {
+    constructor(game) {
+        this.game = game;
+        this.selectedSeed = null;
+        this.currentPlot = null;
+    }
+
+    showSeedSelection(plot) {
+        const existingPanel = document.getElementById('seed-selection-panel');
+        if (existingPanel) {
+            existingPanel.remove();
+        }
+
+        const panel = document.createElement('div');
+        panel.id = 'seed-selection-panel';
+        panel.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 180px;
+            cursor: default;
+        `;
+
+        panel.addEventListener('click', (e) => {
+            if (e.target === panel) {
+                panel.remove();
+                this.clearSelectedSeed();
+            }
+        });
+
+        const storage = this.game.getStorage();
+        const cropTypes = storage.getCropTypes();
+        const resources = storage.getResources();
+
+        let hasSeeds = false;
+
+        const buttons = [];
+
+        Object.entries(cropTypes).forEach(([key, cropInfo]) => {
+            const seedKey = `${key}Seed`;
+            const seedCount = resources[seedKey] || 0;
+            const hasSeed = seedCount > 0;
+
+            if (hasSeed) {
+                hasSeeds = true;
+            }
+
+            const button = document.createElement('button');
+            button.dataset.seedType = key;
+            buttons.push(button);
+
+            button.style.cssText = `
+                padding: 10px 12px;
+                border: none;
+                border-radius: 8px;
+                cursor: ${hasSeed ? 'pointer' : 'not-allowed'};
+                opacity: ${hasSeed ? 1 : 0.4};
+                background: ${hasSeed ? 'rgba(74, 222, 128, 0.15)' : 'rgba(255, 255, 255, 0.05)'};
+                transition: all 0.25s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+                min-width: 70px;
+                border: 2px solid transparent;
+            `;
+
+            if (hasSeed) {
+                button.onclick = () => {
+                    buttons.forEach(btn => {
+                        btn.style.borderColor = 'transparent';
+                        btn.style.background = 'rgba(74, 222, 128, 0.15)';
+                    });
+
+                    button.style.borderColor = '#4ade80';
+                    button.style.background = 'rgba(74, 222, 128, 0.3)';
+
+                    this.selectedSeed = key;
+                    this.game.showToast(`✅ 已选中 ${cropInfo.emoji} ${cropInfo.name}种子，点击空地播种`);
+                };
+
+                button.onmouseenter = () => {
+                    if (!this.selectedSeed || this.selectedSeed !== key) {
+                        button.style.background = 'rgba(74, 222, 128, 0.3)';
+                        button.style.transform = 'scale(1.05)';
+                    }
+                };
+
+                button.onmouseleave = () => {
+                    if (!this.selectedSeed || this.selectedSeed !== key) {
+                        button.style.background = 'rgba(74, 222, 128, 0.15)';
+                        button.style.transform = 'scale(1)';
+                    }
+                };
+            }
+
+            button.innerHTML = `
+                <span style="font-size: 20px;">${cropInfo.emoji}</span>
+                <span style="color: white; font-size: 11px; font-weight: 500;">${cropInfo.name}</span>
+                <span style="color: rgba(255, 255, 255, 0.6); font-size: 10px;">${seedCount} 个</span>
+            `;
+
+            panel.appendChild(button);
+        });
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.style.cssText = `
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            grid-column: span 2;
+            margin-top: 8px;
+        `;
+        confirmBtn.textContent = '🌱 确认播种';
+        confirmBtn.onclick = () => {
+            if (this.selectedSeed) {
+                const targetPlot = this.currentPlot || plot;
+                if (!targetPlot) {
+                    this.game.showToast('⚠️ 请先选择地块');
+                    return;
+                }
+
+                const plots = storage.getFarmPlots();
+                const existingPlot = plots.find(p => p.id === targetPlot.id);
+
+                if (!existingPlot || existingPlot.crop) {
+                    this.game.showToast('⚠️ 该地块已被占用');
+                    return;
+                }
+
+                const success = storage.plantCrop(targetPlot.id, this.selectedSeed);
+                if (success) {
+                    const cropInfoData = cropTypes[this.selectedSeed];
+                    this.game.showToast(`🌱 已种下 ${cropInfoData.emoji} ${cropInfoData.name}！`);
+
+                    buttons.forEach(btn => {
+                        btn.style.borderColor = 'transparent';
+                        btn.style.background = 'rgba(74, 222, 128, 0.15)';
+                    });
+                    this.selectedSeed = null;
+
+                    const updatedResources = storage.getResources();
+                    buttons.forEach(btn => {
+                        const seedType = btn.dataset.seedType;
+                        const seedKey = `${seedType}Seed`;
+                        const seedCount = updatedResources[seedKey] || 0;
+                        const countSpan = btn.querySelector('span:last-child');
+                        if (countSpan) {
+                            countSpan.textContent = `${seedCount} 个`;
+                        }
+                        if (seedCount === 0) {
+                            btn.style.opacity = 0.4;
+                            btn.style.cursor = 'not-allowed';
+                        }
+                    });
+                } else {
+                    this.game.showToast('❌ 无法播种，请检查种子数量');
+                }
+            } else {
+                this.game.showToast('⚠️ 请先选择种子');
+            }
+        };
+        confirmBtn.onmouseenter = () => {
+            confirmBtn.style.transform = 'scale(1.02)';
+            confirmBtn.style.boxShadow = '0 4px 12px rgba(74, 222, 128, 0.4)';
+        };
+        confirmBtn.onmouseleave = () => {
+            confirmBtn.style.transform = 'scale(1)';
+            confirmBtn.style.boxShadow = 'none';
+        };
+        panel.appendChild(confirmBtn);
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.style.cssText = `
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+            transition: all 0.25s ease;
+            grid-column: span 2;
+        `;
+        cancelBtn.textContent = '取消';
+        cancelBtn.onclick = () => {
+            panel.remove();
+            this.selectedSeed = null;
+        };
+        cancelBtn.onmouseenter = () => {
+            cancelBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+        };
+        cancelBtn.onmouseleave = () => {
+            cancelBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+        };
+        panel.appendChild(cancelBtn);
+
+        if (!hasSeeds) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.style.cssText = `
+                padding: 16px;
+                text-align: center;
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 12px;
+                grid-column: span 2;
+            `;
+            emptyMsg.textContent = '📭 没有可用的种子';
+            panel.appendChild(emptyMsg);
+
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = 0.5;
+            confirmBtn.style.cursor = 'not-allowed';
+        }
+
+        document.body.appendChild(panel);
+
+        return panel;
+    }
+
+    clearSelectedSeed() {
+        if (this.selectedSeed) {
+            const cropTypes = this.game.getStorage().getCropTypes();
+            const cropInfo = cropTypes[this.selectedSeed];
+            if (cropInfo) {
+                this.game.showToast(`❌ 已取消选择 ${cropInfo.emoji} ${cropInfo.name}种子`);
+            }
+            this.selectedSeed = null;
+        }
+    }
+
+    plantCrop(plotId, cropType) {
+        const success = this.game.getStorage().plantCrop(plotId, cropType);
+
+        if (success) {
+            const cropTypes = this.game.getStorage().getCropTypes();
+            const cropInfo = cropTypes[cropType];
+            this.game.showToast(`🌱 已种下 ${cropInfo.name}！`);
+        } else {
+            this.game.showToast('❌ 无法播种，请检查种子数量');
+        }
+    }
+
+    harvestCrop(plotId) {
+        const storage = this.game.getStorage();
+        const plots = storage.getFarmPlots();
+        const plot = plots.find(p => p.id === plotId);
+
+        if (!plot || !plot.isReady) return;
+
+        const cropTypes = storage.getCropTypes();
+        const cropInfo = cropTypes[plot.crop];
+
+        const success = storage.harvestCrop(plotId);
+
+        if (success) {
+            this.game.showToast(`✅ 收获了 ${cropInfo.yield} 个 ${cropInfo.name}！`);
+        }
+    }
+
+    setCurrentPlot(plot) {
+        this.currentPlot = plot;
+    }
+
+    getSelectedSeed() {
+        return this.selectedSeed;
+    }
+
+    getCurrentPlot() {
+        return this.currentPlot;
+    }
+}
