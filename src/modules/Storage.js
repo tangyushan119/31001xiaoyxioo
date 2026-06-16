@@ -1,23 +1,23 @@
 export class Storage {
     constructor() {
         this.resources = {
-            wood: 50,
-            stone: 50,
-            ore: 50,
-            apple: 30,
-            pear: 30,
-            treeSeed: 20,
-            fruitSeed: 20,
-            wheatSeed: 20,
-            carrotSeed: 20,
-            tomatoSeed: 20,
-            cornSeed: 20,
+            wood: 200,
+            stone: 200,
+            ore: 200,
+            apple: 200,
+            pear: 200,
+            treeSeed: 200,
+            fruitSeed: 200,
+            wheatSeed: 200,
+            carrotSeed: 200,
+            tomatoSeed: 200,
+            cornSeed: 200,
             wheatHarvest: 0,
             carrotHarvest: 0,
             tomatoHarvest: 0,
             cornHarvest: 0,
             water: 0,
-            gold: 50
+            gold: 200
         };
         
         this.storageCapacity = 400;
@@ -181,23 +181,23 @@ export class Storage {
 
     resetToDefaults() {
         this.resources = {
-            wood: 50,
-            stone: 50,
-            ore: 50,
-            apple: 30,
-            pear: 30,
-            treeSeed: 20,
-            fruitSeed: 20,
-            wheatSeed: 20,
-            carrotSeed: 20,
-            tomatoSeed: 20,
-            cornSeed: 20,
+            wood: 200,
+            stone: 200,
+            ore: 200,
+            apple: 200,
+            pear: 200,
+            treeSeed: 200,
+            fruitSeed: 200,
+            wheatSeed: 200,
+            carrotSeed: 200,
+            tomatoSeed: 200,
+            cornSeed: 200,
             wheatHarvest: 0,
             carrotHarvest: 0,
             tomatoHarvest: 0,
             cornHarvest: 0,
             water: 0,
-            gold: 50
+            gold: 200
         };
         this.buildings = [];
         this.farms = [];
@@ -221,9 +221,7 @@ export class Storage {
             const currentValue = this.resources[key] || 0;
             
             if (amount > 0) {
-                const currentTotal = this.getTotalResourceAmount();
-                const otherResourcesTotal = currentTotal - currentValue;
-                const maxCanAdd = this.storageCapacity - otherResourcesTotal;
+                const maxCanAdd = this.storageCapacity - currentValue;
                 
                 if (maxCanAdd > 0) {
                     const actualAmount = Math.min(amount, maxCanAdd);

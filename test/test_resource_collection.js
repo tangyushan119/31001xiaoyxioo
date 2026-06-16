@@ -18,18 +18,18 @@ function testStorageInitialValues() {
     const storage = new Storage();
     
     const expectedResources = {
-        wood: 50,
-        stone: 50,
-        ore: 50,
-        apple: 30,
-        pear: 30,
-        treeSeed: 20,
-        fruitSeed: 20,
-        wheatSeed: 20,
-        carrotSeed: 20,
-        tomatoSeed: 20,
-        cornSeed: 20,
-        gold: 50
+        wood: 200,
+        stone: 200,
+        ore: 200,
+        apple: 200,
+        pear: 200,
+        treeSeed: 200,
+        fruitSeed: 200,
+        wheatSeed: 200,
+        carrotSeed: 200,
+        tomatoSeed: 200,
+        cornSeed: 200,
+        gold: 200
     };
     
     let allPassed = true;
@@ -98,22 +98,33 @@ function testMultipleCollections() {
 }
 
 function testStorageCapacity() {
-    console.log('\n4. 测试存储容量');
+    console.log('\n4. 测试存储容量（单个资源独立上限）');
     const storage = new Storage();
     
     const capacity = storage.getStorageCapacity();
-    const totalResources = storage.getTotalResourceAmount();
-    const remainingCapacity = capacity - totalResources;
+    const initialWood = storage.getResource('wood');
+    const remainingForWood = capacity - initialWood;
     
-    console.log(`   存储容量: ${capacity}`);
-    console.log(`   当前资源总量: ${totalResources}`);
-    console.log(`   剩余容量: ${remainingCapacity}`);
+    console.log(`   单个资源存储上限: ${capacity}`);
+    console.log(`   当前木材数量: ${initialWood}`);
+    console.log(`   木材剩余容量: ${remainingForWood}`);
     
-    if (remainingCapacity > 0) {
-        console.log('   ✓ 存储容量测试通过（有剩余空间可采集资源）');
-        return true;
+    if (remainingForWood > 0) {
+        const added = storage.modifyResource('wood', remainingForWood + 5);
+        const finalWood = storage.getResource('wood');
+        
+        console.log(`   尝试添加 ${remainingForWood + 5}，实际添加: ${added}`);
+        console.log(`   添加后木材数量: ${finalWood}`);
+        
+        if (finalWood === capacity) {
+            console.log('   ✓ 存储容量测试通过（单个资源上限生效）');
+            return true;
+        } else {
+            console.log(`   ✗ 存储容量测试失败（预期上限 ${capacity}，实际 ${finalWood}）`);
+            return false;
+        }
     } else {
-        console.log('   ✗ 存储容量不足，无法采集资源');
+        console.log('   ✗ 当前资源已达到上限');
         return false;
     }
 }
