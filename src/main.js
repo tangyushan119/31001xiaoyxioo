@@ -166,6 +166,10 @@ export class Game {
         this.shipSystem.showShipBuildingPanel();
     }
 
+    onBuildingClick(building) {
+        this.playerMovement.onBuildingClick(building);
+    }
+
     showSeedSelection(plot) {
         this.plotSystem.showSeedSelection(plot);
     }
@@ -322,3 +326,9 @@ window.addEventListener('beforeunload', () => {
         window.game.storage.saveToLocalStorage();
     }
 });
+
+window.buildDockBuildingClick = function(building) {
+    if (window.game && window.game.isReady) {
+        window.game.onBuildingClick(building);
+    }
+};
