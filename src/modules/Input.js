@@ -203,6 +203,41 @@ export class Input {
     }
 
     update() {
+        if (this.game && this.wasClicked()) {
+            this.handleIslandClick();
+        }
+    }
+    
+    handleIslandClick() {
+        if (!this.game || !this.game.dock) return;
+        
+        const mousePos = this.getCanvasMousePosition();
+        const destinations = this.game.dock.getDestinations();
+        const explored = this.game.dock.getExploredLocations();
+        
+        for (const id of Object.keys(destinations)) {
+            if (id === 'home') continue;
+            
+            const pos = this.game.dock.getIslandPosition(id);
+            if (!pos) continue;
+            
+            const distance = Math.sqrt(
+                Math.pow(mousePos.x - pos.x, 2) + 
+                Math.pow(mousePos.y - pos.y, 2)
+            );
+            
+            if (distance <= pos.radius) {
+                if (explored.includes(id)) {
+                    this.game.showToast(`📍 已发现: ${destinations[id].emoji} ${destinations[id].name}`);
+                    if (destinations[id].requiresSoldiers) {
+                        this.game.showToast(`⚠️ 该岛屿有敌人防御！需要士兵才能进攻`);
+                    }
+                } else {
+                    this.game.showToast(`❓ 未知岛屿，需要先探索`);
+                }
+                break;
+            }
+        }
     }
 
     reset() {

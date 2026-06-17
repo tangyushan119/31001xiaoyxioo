@@ -16,6 +16,7 @@ import { ShipSystem } from './modules/ShipSystem.js';
 import { PlotSystem } from './modules/PlotSystem.js';
 import { ResourceSystem } from './modules/ResourceSystem.js';
 import { RenderSystem } from './modules/RenderSystem.js';
+import { BattleSystem } from './modules/BattleSystem.js';
 
 export class Game {
     constructor() {
@@ -40,6 +41,7 @@ export class Game {
         this.turretManager = null;
         this.barracks = null;
         this.dock = null;
+        this.battleSystem = null;
         
         this.lastTime = 0;
         this.isRunning = false;
@@ -107,6 +109,8 @@ export class Game {
         
         this.dock = new Dock(this);
         
+        this.battleSystem = new BattleSystem(this);
+        
         this.renderer.setGame(this);
         
         this.buildPanel.updateResourceDisplay();
@@ -156,10 +160,19 @@ export class Game {
         this.resourceSystem.update(deltaTime);
         this.playerMovement.update(deltaTime);
         this.buildingSystem.update(deltaTime);
+        
+        if (this.battleSystem) {
+            this.battleSystem.update(deltaTime);
+        }
     }
 
     render() {
         this.renderSystem.render();
+        
+        if (this.battleSystem) {
+            this.battleSystem.renderBattleUI(this.renderer.ctx);
+            this.battleSystem.renderBattleLog(this.renderer.ctx);
+        }
     }
 
     showShipBuildingPanel() {
@@ -314,6 +327,10 @@ export class Game {
 
     getRenderSystem() {
         return this.renderSystem;
+    }
+
+    getBattleSystem() {
+        return this.battleSystem;
     }
 }
 

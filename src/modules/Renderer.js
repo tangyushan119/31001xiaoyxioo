@@ -142,12 +142,19 @@ export class Renderer {
         this.renderGrid();
         
         this.renderSailProgress();
+        this.renderNPCIslands();
     }
     
     renderShips() {
         if (!this.game || !this.game.dock) return;
         
         this.game.dock.renderShips(this.ctx);
+    }
+    
+    renderNPCIslands() {
+        if (!this.game || !this.game.dock) return;
+        
+        this.game.dock.renderNPCIslands(this.ctx);
     }
     
     renderSailProgress() {

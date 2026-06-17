@@ -416,7 +416,6 @@ export class Dock {
         
         const dx = dock.x - center.x;
         const dy = dock.y - center.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
         const angle = Math.atan2(dy, dx);
         
         const seaStartRadius = beachOuterRadius + 20;
@@ -443,6 +442,148 @@ export class Dock {
             
             ctx.restore();
         });
+    }
+    
+    renderNPCIslands(ctx) {
+        if (!this.game || !this.game.terrain) return;
+        
+        const terrain = this.game.terrain;
+        const center = terrain.getIslandCenter();
+        const beachOuterRadius = terrain.getBeachOuterRadius();
+        
+        const destinations = this.getDestinations();
+        const explored = this.getExploredLocations();
+        
+        let index = 0;
+        Object.entries(destinations).forEach(([id, destination]) => {
+            if (id === 'home') return;
+            
+            const angle = (index * 2 * Math.PI / 6) + Math.PI / 4;
+            const distance = beachOuterRadius + 120 + destination.distance * 60;
+            
+            const x = center.x + Math.cos(angle) * distance;
+            const y = center.y + Math.sin(angle) * distance;
+            
+            ctx.save();
+            
+            if (explored.includes(id)) {
+                ctx.font = '40px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(destination.emoji, x, y);
+                
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(destination.name, x, y + 35);
+                
+                if (destination.requiresSoldiers) {
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillText('⚔️', x, y - 35);
+                }
+                
+                ctx.font = '10px Arial';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                const dangerColors = { low: '#22c55e', medium: '#eab308', high: '#ef4444', extreme: '#dc2626' };
+                ctx.fillStyle = dangerColors[destination.dangerLevel] || '#9ca3af';
+                ctx.fillText('危险: ' + (destination.dangerLevel || '低'), x, y + 50);
+            } else {
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillText('❓', x, y);
+                
+                ctx.font = '10px Arial';
+                ctx.fillText('???', x, y + 25);
+            }
+            
+            ctx.restore();
+            
+            index++;
+        });
+    }
+    
+    getIslandPosition(destinationId) {
+        if (!this.game || !this.game.terrain) return null;
+        
+        const terrain = this.game.terrain;
+        const center = terrain.getIslandCenter();
+        const beachOuterRadius = terrain.getBeachOuterRadius();
+        
+        const destinations = this.getDestinations();
+        const destination = destinations[destinationId];
+        if (!destination || destinationId === 'home') return null;
+        
+        const ids = Object.keys(destinations).filter(id => id !== 'home');
+        const index = ids.indexOf(destinationId);
+        
+        const angle = (index * 2 * Math.PI / 6) + Math.PI / 4;
+        const distance = beachOuterRadius + 120 + destination.distance * 60;
+        
+        return {
+            x: center.x + Math.cos(angle) * distance,
+            y: center.y + Math.sin(angle) * distance,
+            radius: 30
+        };
+    }
+    
+    startSail(destinationId, shipId) {
+        const canSailResult = this.canSail(destinationId, shipId);
+        if (!canSailResult.canSail) {
+            return { success: false, message: canSailResult.reason };
+        }
+        
+        const destination = this.destinations[destinationId];
+        const ship = this.ships.find(s => s.id === shipId);
+        
+        if (destination.requiresSoldiers) {
+            const battleSystem = this.game.getBattleSystem();
+            const battleResult = battleSystem.startBattle(destinationId, shipId);
+            
+            if (!battleResult.success) {
+                return battleResult;
+            }
+            
+            const foodNeeded = this.foodConsumptionPerSail[destinationId];
+            const storage = this.game.getStorage();
+            storage.modifyResource('wheatHarvest', -foodNeeded);
+            
+            ship.isDocked = false;
+            ship.currentDestination = destinationId;
+            
+            this.isSailing = true;
+            this.sailStartTime = Date.now();
+            this.currentDestination = destinationId;
+            
+            this.saveToStorage();
+            
+            return { success: true, message: battleResult.message };
+        }
+        
+        const foodNeeded = this.foodConsumptionPerSail[destinationId];
+        const storage = this.game.getStorage();
+        storage.modifyResource('wheatHarvest', -foodNeeded);
+        
+        ship.isDocked = false;
+        ship.currentDestination = destinationId;
+        
+        this.isSailing = true;
+        this.sailStartTime = Date.now();
+        this.currentDestination = destinationId;
+        
+        const adjustedDuration = this.sailDuration / ship.speed;
+        
+        setTimeout(() => {
+            this.completeSail(destinationId, shipId);
+        }, adjustedDuration);
+        
+        this.saveToStorage();
+        
+        return { 
+            success: true, 
+            message: `🚢 船只已出发前往 ${destination.emoji} ${destination.name}！消耗了 ${foodNeeded} 小麦` 
+        };
     }
     
     destroy() {
