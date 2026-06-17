@@ -234,9 +234,10 @@ export class Storage {
                     return 0;
                 }
             } else {
+                const actualAmount = Math.max(amount, -currentValue);
                 this.resources[key] = Math.max(0, currentValue + amount);
                 this.saveToLocalStorage();
-                return amount;
+                return actualAmount;
             }
         }
         return 0;

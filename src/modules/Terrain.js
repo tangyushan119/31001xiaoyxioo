@@ -74,7 +74,9 @@ export class Terrain {
     }
 
     canBuildAt(x, y) {
-        return this.isOnLand(x, y);
+        const distance = Math.sqrt(Math.pow(x - this.centerX, 2) + Math.pow(y - this.centerY, 2));
+        const buildableRadius = this.landRadius * 0.9;
+        return distance < buildableRadius && this.isOnLand(x, y);
     }
 
     canBuildDockOnBeachAt(x, y) {
@@ -87,7 +89,7 @@ export class Terrain {
         const beachWidth = beachOuterRadius - beachInnerRadius;
         const dockZoneStartRadius = beachInnerRadius + beachWidth * 0.4;
         
-        return distance >= dockZoneStartRadius;
+        return distance >= dockZoneStartRadius && distance < beachOuterRadius;
     }
 
     isInDockZone(x, y) {

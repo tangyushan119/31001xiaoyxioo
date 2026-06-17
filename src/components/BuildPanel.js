@@ -257,33 +257,42 @@ export class BuildPanel {
         const buildingConfig = this.buildingTypes[type];
         if (!buildingConfig) {
             this.showError('未知建筑类型！');
-            return;
+            return false;
         }
         
-        const terrainType = this.game.terrain.getTerrainType(x, y);
+        const alignedPos = this.snapToGrid(x, y, buildingConfig.size);
+        const terrainType = this.game.terrain.getTerrainType(alignedPos.x, alignedPos.y);
         
-        if (terrainType === 'water') {
-            this.showError('❌ 无法在水中建造！');
-            return;
-        }
+        console.log(`[DEBUG] tryPlaceBuilding - type: ${type}, x: ${x}, y: ${y}, aligned: (${alignedPos.x}, ${alignedPos.y}), terrain: ${terrainType}`);
         
         if (buildingConfig.isDock) {
             if (terrainType === 'water') {
+                console.log(`[DEBUG] 拒绝建造: 在水中`);
                 this.showError('❌ 无法在水中建造码头！');
-                return;
+                return false;
             }
-            if (terrainType === 'beach' && !this.game.terrain.canBuildDockOnBeachAt(x, y)) {
-                this.showError('❌ 码头只能建造在靠近水边的沙滩区域！');
-                return;
+            if (terrainType === 'beach') {
+                const canBuild = this.game.terrain.canBuildDockOnBeachAt(alignedPos.x, alignedPos.y);
+                console.log(`[DEBUG] 沙滩区域, canBuildDockOnBeachAt: ${canBuild}`);
+                if (!canBuild) {
+                    console.log(`[DEBUG] 拒绝建造: 沙滩内侧区域`);
+                    this.showError('❌ 码头只能建造在靠近水边的沙滩区域！');
+                    return false;
+                }
+            }
+            if (terrainType === 'land') {
+                console.log(`[DEBUG] 拒绝建造: 码头不能在陆地上建造`);
+                this.showError('❌ 码头只能建造在沙滩临水区域！');
+                return false;
             }
         } else {
-            if (terrainType === 'beach') {
-                this.showError('❌ 沙滩上只能建造码头！');
-                return;
-            }
             if (terrainType !== 'land') {
                 this.showError('❌ 只能在草地上建造！');
-                return;
+                return false;
+            }
+            if (!this.game.terrain.canBuildAt(alignedPos.x, alignedPos.y)) {
+                this.showError('❌ 该位置太靠近沙滩，无法建造！');
+                return false;
             }
         }
         
@@ -291,8 +300,11 @@ export class BuildPanel {
         const missingResources = [];
         let canAfford = true;
         
+        console.log(`[DEBUG] 资源检查 - cost: ${JSON.stringify(buildingConfig.cost)}, resources: ${JSON.stringify(resources)}`);
+        
         for (const [key, value] of Object.entries(buildingConfig.cost)) {
             const current = resources[key] || 0;
+            console.log(`[DEBUG] 资源 ${key}: 当前 ${current}, 需要 ${value}`);
             if (current < value) {
                 canAfford = false;
                 const resourceInfo = this.game.storage.getResourceInfo(key);
@@ -302,39 +314,25 @@ export class BuildPanel {
             }
         }
         
+        console.log(`[DEBUG] canAfford: ${canAfford}`);
+        
         if (!canAfford) {
             const message = `❌ 资源不足！\n需要：\n${missingResources.join('\n')}`;
             this.showError(message);
-            return;
+            console.log(`[DEBUG] 拒绝建造: 资源不足`);
+            return false;
         }
         
-        const alignedPos = this.snapToGrid(x, y, buildingConfig.size);
-        
-        if (buildingConfig.isDock) {
-            const dockTerrainType = this.game.terrain.getTerrainType(alignedPos.x, alignedPos.y);
-            if (dockTerrainType === 'water') {
-                this.showError('❌ 无法在水中建造码头！');
-                return;
-            }
-            if (dockTerrainType === 'beach' && !this.game.terrain.canBuildDockOnBeachAt(alignedPos.x, alignedPos.y)) {
-                this.showError('❌ 码头只能建造在靠近水边的沙滩区域！');
-                return;
-            }
-        } else {
-            if (!this.isPositionOnLand(alignedPos.x, alignedPos.y)) {
-                this.showError('❌ 该位置不是草地！');
-                return;
-            }
-            
+        if (!buildingConfig.isDock) {
             if (this.isOverlappingFarmArea(alignedPos.x, alignedPos.y, buildingConfig.size)) {
                 this.showError('❌ 无法在农田区域建造！');
-                return;
+                return false;
             }
         }
         
         if (!this.isSpaceAvailable(alignedPos.x, alignedPos.y, buildingConfig.size)) {
             this.showError('❌ 该位置已有建筑！');
-            return;
+            return false;
         }
         
         this.consumeResources(buildingConfig.cost);
@@ -414,29 +412,9 @@ export class BuildPanel {
     
     snapToGrid(x, y, size) {
         const gridSize = 50;
-        const halfSize = size / 2;
         
-        let alignedX = Math.round(x / gridSize) * gridSize;
-        let alignedY = Math.round(y / gridSize) * gridSize;
-        
-        const terrain = this.game.terrain;
-        const maxIterations = 5;
-        let iteration = 0;
-        
-        const canBuildAtPosition = (posX, posY) => {
-            const terrainType = terrain.getTerrainType(posX, posY);
-            if (terrainType === 'land') return true;
-            if (terrainType === 'beach' && terrain.canBuildDockOnBeachAt(posX, posY)) return true;
-            return false;
-        };
-        
-        while (!canBuildAtPosition(alignedX, alignedY) && iteration < maxIterations) {
-            const offsetX = (Math.random() - 0.5) * gridSize * 2;
-            const offsetY = (Math.random() - 0.5) * gridSize * 2;
-            alignedX = Math.round((x + offsetX) / gridSize) * gridSize;
-            alignedY = Math.round((y + offsetY) / gridSize) * gridSize;
-            iteration++;
-        }
+        const alignedX = Math.round(x / gridSize) * gridSize;
+        const alignedY = Math.round(y / gridSize) * gridSize;
         
         return { x: alignedX, y: alignedY };
     }
