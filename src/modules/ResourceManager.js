@@ -241,15 +241,8 @@ export class ResourceManager {
     
     checkPlayerProximity() {
         const player = this.game.getPlayer();
-        const input = this.game.getInput();
         
-        if (!player || !input) return;
-        
-        const mousePos = input.getCanvasMousePosition();
-        
-        if (this.isInFarmArea(mousePos.x, mousePos.y)) {
-            return;
-        }
+        if (!player) return;
         
         const playerPos = player.getPosition();
         
@@ -260,9 +253,7 @@ export class ResourceManager {
             const dy = playerPos.y - resource.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            if (distance < this.collectionRange && input.wasClicked()) {
-                this.collectResource(resource);
-            }
+            resource.isNearPlayer = distance < this.collectionRange;
         });
     }
     

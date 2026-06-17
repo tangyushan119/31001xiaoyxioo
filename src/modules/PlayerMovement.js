@@ -6,7 +6,6 @@ export class PlayerMovement {
 
     update(deltaTime) {
         this.handleBuildingInteractions();
-        this.handlePlotInteractions();
     }
 
     handleBuildingInteractions() {
@@ -15,9 +14,8 @@ export class PlayerMovement {
 
         const player = this.game.getPlayer();
         const storage = this.game.getStorage();
-        const input = this.game.getInput();
 
-        if (!player || !storage || !input) return;
+        if (!player || !storage) return;
 
         const playerPos = player.getPosition();
         const buildings = storage.getBuildings();
@@ -27,8 +25,11 @@ export class PlayerMovement {
             const dy = playerPos.y - building.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < building.size && input.wasClicked()) {
-                this.onBuildingClick(building);
+            if (distance < building.size) {
+                const input = this.game.getInput();
+                if (input && input.wasClicked()) {
+                    this.onBuildingClick(building);
+                }
             }
         });
     }
@@ -41,34 +42,6 @@ export class PlayerMovement {
                 this.game.getBuildPanel().unlockShipBuilding();
             }
             this.game.showShipBuildingPanel();
-        }
-    }
-
-    handlePlotInteractions() {
-        const inventoryPanel = this.game.getInventoryPanel();
-        if (inventoryPanel && inventoryPanel.isVisible()) return;
-
-        const input = this.game.getInput();
-        if (!input.wasClicked()) return;
-
-        const mousePos = input.getCanvasMousePosition();
-        const terrain = this.game.getTerrain();
-
-        if (!terrain || !terrain.landRenderer) return;
-
-        const plot = terrain.landRenderer.getPlotAtPosition(mousePos.x, mousePos.y);
-
-        if (plot) {
-            const plots = this.game.getStorage().getFarmPlots();
-            const targetPlot = plots.find(p => p.id === plot.id);
-
-            if (targetPlot) {
-                if (targetPlot.isReady) {
-                    this.game.harvestCrop(targetPlot.id);
-                } else if (!targetPlot.crop) {
-                    this.game.showSeedSelection(plot);
-                }
-            }
         }
     }
 

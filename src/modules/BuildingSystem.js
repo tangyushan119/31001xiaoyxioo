@@ -83,11 +83,11 @@ export class BuildingSystem {
         const terrainType = this.game.terrain.getTerrainType(x, y);
 
         if (buildingConfig.isDock) {
-            if (terrainType !== 'water') {
+            if (!this.game.terrain.canBuildDockOnBeachAt(x, y)) {
                 return false;
             }
         } else {
-            if (terrainType !== 'land') {
+            if (!this.game.terrain.canBuildAt(x, y)) {
                 return false;
             }
         }
@@ -118,10 +118,16 @@ export class BuildingSystem {
     }
 
     isOverlappingFarmArea(x, y, size) {
-        if (!this.game.plotSystem) return false;
-
         const halfSize = size / 2;
-        const farmBounds = this.game.plotSystem.getFarmBounds();
+        let farmBounds = null;
+
+        if (this.game.plotSystem) {
+            farmBounds = this.game.plotSystem.getFarmBounds();
+        }
+
+        if (!farmBounds && this.game.terrain && this.game.terrain.landRenderer) {
+            farmBounds = this.game.terrain.landRenderer.getFarmArea();
+        }
 
         if (farmBounds) {
             return !(x + halfSize < farmBounds.x ||

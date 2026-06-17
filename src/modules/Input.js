@@ -85,13 +85,13 @@ export class Input {
         this.mouse.released = true;
         this.isDragging = false;
 
-        if (!this.draggedBuilding && this.game && this.game.buildingSystem) {
+        if (!this.draggedBuilding && this.game) {
             const canvas = this.game.renderer?.canvas;
             if (canvas) {
                 const rect = canvas.getBoundingClientRect();
                 if (e.clientX >= rect.left && e.clientX <= rect.right &&
                     e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                    this.game.buildingSystem.handleClick(this.mouse.canvasX, this.mouse.canvasY);
+                    this.game.handleCanvasClick(this.mouse.canvasX, this.mouse.canvasY);
                 }
             }
         }
@@ -326,16 +326,6 @@ export class Input {
     }
 
     update() {
-        if (this.game && this.wasClicked() && !this.isDragging) {
-            const canvas = this.game.renderer?.canvas;
-            if (canvas) {
-                const rect = canvas.getBoundingClientRect();
-                if (this.mouse.x >= rect.left && this.mouse.x <= rect.right &&
-                    this.mouse.y >= rect.top && this.mouse.y <= rect.bottom) {
-                    this.handleIslandClick();
-                }
-            }
-        }
     }
 
     updateDragPreview(e) {

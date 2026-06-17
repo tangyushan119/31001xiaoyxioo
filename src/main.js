@@ -188,6 +188,95 @@ export class Game {
         this.modules.playerMovement.onBuildingClick(building);
     }
 
+    handleCanvasClick(x, y) {
+        const input = this.getInput();
+        if (!input) return;
+
+        if (this.modules.buildingSystem.isPlacingBuilding()) {
+            this.modules.buildingSystem.handleClick(x, y);
+            input.mouse.clicked = false;
+            return;
+        }
+
+        this.modules.buildingSystem.handleClick(x, y);
+
+        const inventoryPanel = this.getInventoryPanel();
+        if (inventoryPanel && inventoryPanel.isVisible()) {
+            return;
+        }
+
+        if (this.modules.plotSystem) {
+            const terrain = this.getTerrain();
+            if (terrain && terrain.landRenderer) {
+                const plot = terrain.landRenderer.getPlotAtPosition(x, y);
+                if (plot) {
+                    const plots = this.getStorage().getFarmPlots();
+                    const targetPlot = plots.find(p => p.id === plot.id);
+                    if (targetPlot) {
+                        if (targetPlot.isReady) {
+                            this.modules.plotSystem.harvestCrop(targetPlot.id);
+                            input.mouse.clicked = false;
+                            return;
+                        } else if (!targetPlot.crop) {
+                            this.modules.plotSystem.showSeedSelection(plot);
+                            input.mouse.clicked = false;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (this.resourceManager) {
+            const player = this.getPlayer();
+            if (player) {
+                const playerPos = player.getPosition();
+                const resources = this.resourceManager.getResources();
+                
+                for (const resource of resources) {
+                    if (resource.isDepleted) continue;
+                    const dx = playerPos.x - resource.x;
+                    const dy = playerPos.y - resource.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < this.resourceManager.getCollectionRange()) {
+                        this.resourceManager.collectResource(resource);
+                        input.mouse.clicked = false;
+                        return;
+                    }
+                }
+            }
+        }
+
+        if (this.dock) {
+            const destinations = this.dock.getDestinations();
+            const explored = this.dock.getExploredLocations();
+            for (const id of Object.keys(destinations)) {
+                if (id === 'home') continue;
+                const pos = this.dock.getIslandPosition(id);
+                if (!pos) continue;
+                const distance = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
+                if (distance <= pos.radius) {
+                    if (explored.includes(id)) {
+                        this.selectedIsland = id;
+                        if (destinations[id].requiresSoldiers) {
+                            input.showBattleConfirmModal(id);
+                        } else {
+                            if (this.buildPanel) {
+                                this.buildPanel.showSuccess(`已选中: ${destinations[id].emoji} ${destinations[id].name}`);
+                            }
+                        }
+                    } else {
+                        if (this.buildPanel) {
+                            this.buildPanel.showError('未知区域，需要先探索');
+                        }
+                    }
+                    input.mouse.clicked = false;
+                    return;
+                }
+            }
+        }
+    }
+
     showSeedSelection(plot) {
         this.modules.plotSystem.showSeedSelection(plot);
     }

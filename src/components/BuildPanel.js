@@ -145,26 +145,33 @@ export class BuildPanel {
     tryPlaceBuilding(buildingType, x, y) {
         const config = this.buildingTypes[buildingType];
 
-        if (!this.game.terrain.canBuildAt(x, y)) {
+        let canBuild = false;
+        if (config.isDock) {
+            canBuild = this.game.terrain.canBuildDockOnBeachAt(x, y);
+        } else {
+            canBuild = this.game.terrain.canBuildAt(x, y);
+        }
+
+        if (!canBuild) {
             this.showError('无法在此位置建造！');
-            return;
+            return false;
         }
 
         if (!this.isSpaceAvailable(x, y, config.size)) {
             this.showError('建造空间不足！');
-            return;
+            return false;
         }
 
         if (this.isOverlappingFarmArea(x, y, config.size)) {
             this.showError('与农田区域重叠！');
-            return;
+            return false;
         }
 
         const missingResources = this.getMissingResources(config.cost);
         if (missingResources.length > 0) {
             const message = `资源不足！\n需要：\n${missingResources.join('\n')}`;
             this.showError(message);
-            return;
+            return false;
         }
 
         const alignedPos = this.snapToGrid(x, y, config.size);
@@ -211,6 +218,7 @@ export class BuildPanel {
         this.updateResourceDisplay();
         this.updateBuildingCount();
         this.updateBuildItemStates();
+        return true;
     }
 
     onBuildItemClick(e) {
@@ -246,6 +254,10 @@ export class BuildPanel {
         }
 
         this.selectBuilding(buildingType);
+        
+        if (this.game.buildingSystem) {
+            this.game.buildingSystem.startPlacement(buildingType);
+        }
     }
 
     onBuildShip(shipType) {
@@ -476,11 +488,9 @@ export class BuildPanel {
 
     snapToGrid(x, y, size) {
         const gridSize = GAME_CONFIG.GRID_SIZE;
-        const halfSize = size / 2;
-        const halfGrid = gridSize / 2;
 
-        const snappedX = Math.round((x - halfGrid) / gridSize) * gridSize + halfGrid;
-        const snappedY = Math.round((y - halfGrid) / gridSize) * gridSize + halfGrid;
+        const snappedX = Math.round(x / gridSize) * gridSize;
+        const snappedY = Math.round(y / gridSize) * gridSize;
 
         return { x: snappedX, y: snappedY };
     }
@@ -527,15 +537,21 @@ export class BuildPanel {
 
     isOverlappingFarmArea(x, y, size) {
         const halfSize = size / 2;
+        let farmBounds = null;
 
         if (this.game.plotSystem) {
-            const farmBounds = this.game.plotSystem.getFarmBounds();
-            if (farmBounds) {
-                return !(x + halfSize < farmBounds.x ||
-                         x - halfSize > farmBounds.x + farmBounds.width ||
-                         y + halfSize < farmBounds.y ||
-                         y - halfSize > farmBounds.y + farmBounds.height);
-            }
+            farmBounds = this.game.plotSystem.getFarmBounds();
+        }
+
+        if (!farmBounds && this.game.terrain && this.game.terrain.landRenderer) {
+            farmBounds = this.game.terrain.landRenderer.getFarmArea();
+        }
+
+        if (farmBounds) {
+            return !(x + halfSize < farmBounds.x ||
+                     x - halfSize > farmBounds.x + farmBounds.width ||
+                     y + halfSize < farmBounds.y ||
+                     y - halfSize > farmBounds.y + farmBounds.height);
         }
 
         return false;

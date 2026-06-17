@@ -74,9 +74,7 @@ export class Terrain {
     }
 
     canBuildAt(x, y) {
-        const distance = Math.sqrt(Math.pow(x - this.centerX, 2) + Math.pow(y - this.centerY, 2));
-        const buildableRadius = this.landRadius * 0.9;
-        return distance < buildableRadius && this.isOnLand(x, y);
+        return this.isOnLand(x, y);
     }
 
     canBuildDockOnBeachAt(x, y) {

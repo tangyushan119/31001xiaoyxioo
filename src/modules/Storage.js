@@ -3,7 +3,7 @@ import { GAME_CONFIG, INITIAL_RESOURCES, RESOURCE_INFO, RESOURCE_CATEGORIES, CRO
 export class Storage {
     constructor() {
         this.resources = { ...INITIAL_RESOURCES };
-        this.storageCapacity = 2000;
+        this.storageCapacity = 10000;
         this.resourceCategories = { ...RESOURCE_CATEGORIES };
         this.resourceInfo = { ...RESOURCE_INFO };
         this.cropTypes = { ...CROP_TYPES };
@@ -64,6 +64,13 @@ export class Storage {
         }
 
         if (this.farmPlots.length === 0) {
+            this.initFarmPlots();
+        }
+
+        const totalResources = this.getTotalResourceAmount();
+        if (totalResources > this.storageCapacity) {
+            console.log('资源总量超过容量限制，重置为默认值');
+            this.resetToDefaults();
             this.initFarmPlots();
         }
     }
