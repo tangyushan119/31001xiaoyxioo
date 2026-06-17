@@ -106,6 +106,8 @@ export class ResourceManager {
         const center = terrain.getIslandCenter();
         
         const resourceCount = 8;
+        const requiredTypes = ['bigTree', 'smallTree', 'stonePile', 'farmland'];
+        let spawnedTypes = new Set();
         
         for (let i = 0; i < resourceCount; i++) {
             const angle = (i / resourceCount) * Math.PI * 2;
@@ -115,7 +117,13 @@ export class ResourceManager {
             const y = center.y + Math.sin(angle) * distance;
             
             if (terrain.isOnLand(x, y) && !this.isInFarmArea(x, y)) {
-                const type = this.getRandomResourceType();
+                let type = this.getRandomResourceType();
+                
+                if (i < requiredTypes.length && !spawnedTypes.has(requiredTypes[i])) {
+                    type = requiredTypes[i];
+                    spawnedTypes.add(type);
+                }
+                
                 this.spawnResource(x, y, type);
             }
         }

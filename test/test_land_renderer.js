@@ -60,8 +60,8 @@ function createMockGame() {
                 return info[key] || null;
             }
         }),
-        getInput: () => ({ wasClicked: () => false }),
-        getBuildPanel: () => ({ updateResourceDisplay: () => {} })
+        getInput: () => ({ wasClicked: () => false, getCanvasMousePosition: () => ({ x: 0, y: 0 })}),
+        getBuildPanel: () => ({ updateResourceDisplay: () => {}, updateBuildItemStates: () => {} })
     };
 }
 
