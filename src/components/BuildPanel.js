@@ -423,7 +423,14 @@ export class BuildPanel {
         const maxIterations = 5;
         let iteration = 0;
         
-        while (!terrain.canBuildAt(alignedX, alignedY) && iteration < maxIterations) {
+        const canBuildAtPosition = (posX, posY) => {
+            const terrainType = terrain.getTerrainType(posX, posY);
+            if (terrainType === 'land') return true;
+            if (terrainType === 'beach' && terrain.canBuildDockOnBeachAt(posX, posY)) return true;
+            return false;
+        };
+        
+        while (!canBuildAtPosition(alignedX, alignedY) && iteration < maxIterations) {
             const offsetX = (Math.random() - 0.5) * gridSize * 2;
             const offsetY = (Math.random() - 0.5) * gridSize * 2;
             alignedX = Math.round((x + offsetX) / gridSize) * gridSize;

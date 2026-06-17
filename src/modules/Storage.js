@@ -107,6 +107,7 @@ export class Storage {
     }
 
     loadFromLocalStorage() {
+        if (typeof localStorage === 'undefined') return;
         const saved = localStorage.getItem('islandGameData');
         if (saved) {
             try {
@@ -151,6 +152,7 @@ export class Storage {
             playerPosition: this.playerPosition
         };
         
+        if (typeof localStorage === 'undefined') return;
         try {
             localStorage.setItem('islandGameData', JSON.stringify(data));
         } catch (e) {

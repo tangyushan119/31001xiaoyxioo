@@ -19,7 +19,8 @@ export class BeachRenderer {
         const canvas = document.createElement('canvas');
         canvas.width = 64;
         canvas.height = 64;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext?.('2d');
+        if (!ctx) return;
         
         const baseColors = [
             { r: 230, g: 210, b: 175 },

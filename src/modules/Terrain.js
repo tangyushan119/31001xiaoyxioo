@@ -84,8 +84,8 @@ export class Terrain {
         const beachInnerRadius = this.landRadius;
         const beachOuterRadius = this.beachOuterRadius;
         
-        const dockZoneWidth = (beachOuterRadius - beachInnerRadius) * 0.6;
-        const dockZoneStartRadius = beachOuterRadius - dockZoneWidth;
+        const beachWidth = beachOuterRadius - beachInnerRadius;
+        const dockZoneStartRadius = beachInnerRadius + beachWidth * 0.4;
         
         return distance >= dockZoneStartRadius;
     }
