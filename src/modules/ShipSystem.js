@@ -1,6 +1,9 @@
+import { SHIP_TYPES } from '../config.js';
+
 export class ShipSystem {
     constructor(game) {
         this.game = game;
+        this.shipTypes = { ...SHIP_TYPES };
     }
 
     showShipBuildingPanel() {
@@ -12,27 +15,24 @@ export class ShipSystem {
     }
 
     updateShipBuildingPanel() {
-        const dock = this.game.getDock();
-        const storage = this.game.getStorage();
+        const dock = this.game.dock;
+        const storage = this.game.storage;
 
         if (!dock || !storage) return;
 
-        const shipTypes = dock.getShipTypes();
         const resources = storage.getResources();
         const shipList = document.getElementById('ship-types-list');
 
         shipList.innerHTML = '';
 
-        Object.entries(shipTypes).forEach(([key, shipInfo]) => {
+        Object.entries(this.shipTypes).forEach(([key, shipInfo]) => {
             let canAfford = true;
-            const missingResources = [];
 
             for (const [resKey, value] of Object.entries(shipInfo.cost)) {
                 const current = resources[resKey] || 0;
                 if (current < value) {
                     canAfford = false;
-                    const resInfo = storage.getResourceInfo(resKey);
-                    missingResources.push(`${resInfo?.emoji || '❓'} ${current}/${value}`);
+                    break;
                 }
             }
 
@@ -88,22 +88,26 @@ export class ShipSystem {
     }
 
     buildShip(shipType) {
-        const result = this.game.getDock().buildShip(shipType);
+        const result = this.game.dock.buildShip(shipType);
 
         if (result.success) {
-            this.game.showToast(result.message);
+            if (this.game.buildPanel) {
+                this.game.buildPanel.showSuccess(result.message);
+                this.game.buildPanel.updateResourceDisplay();
+            }
             this.updateShipBuildingPanel();
-            this.game.getBuildPanel().updateResourceDisplay();
         } else {
-            this.game.showToast(result.message);
+            if (this.game.buildPanel) {
+                this.game.buildPanel.showError(result.message);
+            }
         }
     }
 
     getDockedShips() {
-        return this.game.getDock().getDockedShips();
+        return this.game.dock.getDockedShips();
     }
 
     getShipTypes() {
-        return this.game.getDock().getShipTypes();
+        return { ...this.shipTypes };
     }
 }

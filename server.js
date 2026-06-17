@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const hostname = '0.0.0.0';
-const port = 31001;
+const port = 8080;
 
 const server = http.createServer((req, res) => {
     let filePath = '.' + req.url;

@@ -17,6 +17,7 @@ import { PlotSystem } from './modules/PlotSystem.js';
 import { ResourceSystem } from './modules/ResourceSystem.js';
 import { RenderSystem } from './modules/RenderSystem.js';
 import { BattleSystem } from './modules/BattleSystem.js';
+import { GAME_CONFIG } from './config.js';
 
 export class Game {
     constructor() {
@@ -24,14 +25,16 @@ export class Game {
         this.renderer = new Renderer(this.canvas);
         this.storage = new Storage();
         this.input = new Input();
-        
-        this.playerMovement = new PlayerMovement(this);
-        this.buildingSystem = new BuildingSystem(this);
-        this.shipSystem = new ShipSystem(this);
-        this.plotSystem = new PlotSystem(this);
-        this.resourceSystem = new ResourceSystem(this);
-        this.renderSystem = new RenderSystem(this);
-        
+
+        this.modules = {
+            playerMovement: new PlayerMovement(this),
+            buildingSystem: new BuildingSystem(this),
+            shipSystem: new ShipSystem(this),
+            plotSystem: new PlotSystem(this),
+            resourceSystem: new ResourceSystem(this),
+            renderSystem: new RenderSystem(this)
+        };
+
         this.terrain = null;
         this.player = null;
         this.buildPanel = null;
@@ -42,14 +45,14 @@ export class Game {
         this.barracks = null;
         this.dock = null;
         this.battleSystem = null;
-        
+
         this.lastTime = 0;
         this.isRunning = false;
         this.isReady = false;
-        
+
         this.hoveredIsland = null;
         this.selectedIsland = null;
-        
+
         this.init();
     }
 
@@ -64,16 +67,17 @@ export class Game {
                 this.terrain.updateDimensions();
             }
         });
-        
+
         const resetBtn = document.getElementById('reset-btn');
         if (resetBtn) {
             resetBtn.addEventListener('click', () => this.restart());
         }
-        
+
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Escape') {
-                this.plotSystem.clearSelectedSeed();
+                this.modules.plotSystem.clearSelectedSeed();
                 this.buildPanel?.clearSelectedBuilding();
+                this.modules.buildingSystem.cancelPlacement();
             }
         });
     }
@@ -86,92 +90,90 @@ export class Game {
                 requestAnimationFrame(checkReady);
             }
         };
-        
+
         checkReady();
     }
 
     setupGame() {
         this.terrain = new Terrain(this.renderer);
         this.terrain.init();
-        
+
         this.player = new Player(this);
-        
+
         this.input.setGame(this);
-        
+
         this.buildPanel = new BuildPanel(this);
         this.inventoryPanel = new InventoryPanel(this);
-        
+
         this.resourceManager = new ResourceManager(this);
-        
+
         this.enemyManager = new EnemyManager(this);
-        
+
         this.turretManager = new TurretManager(this);
         this.turretManager.init();
-        
+
         this.barracks = new Barracks(this);
-        
+
         this.dock = new Dock(this);
-        
+
         this.battleSystem = new BattleSystem(this);
-        
-        this.renderer.setGame(this);
-        
+
         this.buildPanel.updateResourceDisplay();
         this.buildPanel.updateBuildingCount();
-        
+
         this.isReady = true;
         this.isRunning = true;
         this.lastTime = performance.now();
-        
+
         this.gameLoop();
-        
+
         this.showWelcomeMessage();
     }
 
     gameLoop() {
         if (!this.isRunning) return;
-        
+
         const currentTime = performance.now();
         const deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
-        
+
         this.update(deltaTime);
         this.render();
-        
+
         requestAnimationFrame(() => this.gameLoop());
     }
 
     update(deltaTime) {
         if (!this.isReady) return;
-        
+
         this.player.update(deltaTime);
         this.terrain.update(deltaTime);
         this.input.update();
-        
+
         if (this.resourceManager) {
             this.resourceManager.update(deltaTime);
         }
-        
+
         if (this.enemyManager) {
             this.enemyManager.updateEnemies(deltaTime);
         }
-        
+
         if (this.turretManager) {
             this.turretManager.updateTurrets(deltaTime);
         }
-        
-        this.resourceSystem.update(deltaTime);
-        this.playerMovement.update(deltaTime);
-        this.buildingSystem.update(deltaTime);
-        
+
+        this.modules.resourceSystem.update(deltaTime);
+        this.modules.playerMovement.update(deltaTime);
+        this.modules.buildingSystem.update(deltaTime);
+
         if (this.battleSystem) {
             this.battleSystem.update(deltaTime);
         }
     }
 
     render() {
-        this.renderSystem.render();
-        
+        this.modules.renderSystem.render();
+
         if (this.battleSystem) {
             this.battleSystem.renderBattleUI(this.renderer.ctx);
             this.battleSystem.renderBattleLog(this.renderer.ctx);
@@ -179,19 +181,19 @@ export class Game {
     }
 
     showShipBuildingPanel() {
-        this.shipSystem.showShipBuildingPanel();
+        this.modules.shipSystem.showShipBuildingPanel();
     }
 
     onBuildingClick(building) {
-        this.playerMovement.onBuildingClick(building);
+        this.modules.playerMovement.onBuildingClick(building);
     }
 
     showSeedSelection(plot) {
-        this.plotSystem.showSeedSelection(plot);
+        this.modules.plotSystem.showSeedSelection(plot);
     }
 
     harvestCrop(plotId) {
-        this.plotSystem.harvestCrop(plotId);
+        this.modules.plotSystem.harvestCrop(plotId);
     }
 
     showToast(message) {
@@ -199,13 +201,13 @@ export class Game {
         if (existingToast) {
             existingToast.remove();
         }
-        
+
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.style.background = 'rgba(52, 152, 219, 0.9)';
         toast.textContent = message;
         document.body.appendChild(toast);
-        
+
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => {
@@ -225,11 +227,15 @@ export class Game {
         if (this.turretManager) {
             this.turretManager.clearAll();
         }
+        if (this.dock) {
+            this.dock.destroy();
+        }
     }
 
     restart() {
         this.storage.clearAll();
         this.player.init();
+        
         if (this.resourceManager) {
             this.resourceManager = new ResourceManager(this);
         }
@@ -239,6 +245,11 @@ export class Game {
         if (this.turretManager) {
             this.turretManager.reset();
         }
+        if (this.dock) {
+            this.dock.destroy();
+            this.dock = new Dock(this);
+        }
+
         this.buildPanel.updateResourceDisplay();
         this.buildPanel.updateBuildingCount();
         this.buildPanel.updateBuildItemStates();
@@ -249,9 +260,9 @@ export class Game {
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.style.background = 'rgba(52, 152, 219, 0.9)';
-        toast.textContent = '🌴 欢迎来到海岛生存！使用 WASD 或方向键移动，靠近资源点击采集';
+        toast.textContent = '🏝️ 欢迎来到海岛生存，使用 WASD 或方向键移动，靠近资源点击采集';
         document.body.appendChild(toast);
-        
+
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => {
@@ -309,27 +320,27 @@ export class Game {
     }
 
     getPlayerMovement() {
-        return this.playerMovement;
+        return this.modules.playerMovement;
     }
 
     getBuildingSystem() {
-        return this.buildingSystem;
+        return this.modules.buildingSystem;
     }
 
     getShipSystem() {
-        return this.shipSystem;
+        return this.modules.shipSystem;
     }
 
     getPlotSystem() {
-        return this.plotSystem;
+        return this.modules.plotSystem;
     }
 
     getResourceSystem() {
-        return this.resourceSystem;
+        return this.modules.resourceSystem;
     }
 
     getRenderSystem() {
-        return this.renderSystem;
+        return this.modules.renderSystem;
     }
 
     getBattleSystem() {
