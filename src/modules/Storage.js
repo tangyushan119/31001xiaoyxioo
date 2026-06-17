@@ -1,26 +1,26 @@
 export class Storage {
     constructor() {
         this.resources = {
-            wood: 200,
-            stone: 200,
-            ore: 0,
-            apple: 0,
-            pear: 0,
-            treeSeed: 0,
-            fruitSeed: 0,
-            wheatSeed: 5,
-            carrotSeed: 5,
-            tomatoSeed: 5,
-            cornSeed: 5,
-            wheatHarvest: 0,
-            carrotHarvest: 0,
-            tomatoHarvest: 0,
-            cornHarvest: 0,
-            water: 0,
-            gold: 200
+            wood: 400,
+            stone: 400,
+            ore: 400,
+            apple: 400,
+            pear: 400,
+            treeSeed: 400,
+            fruitSeed: 400,
+            wheatSeed: 400,
+            carrotSeed: 400,
+            tomatoSeed: 400,
+            cornSeed: 400,
+            wheatHarvest: 400,
+            carrotHarvest: 400,
+            tomatoHarvest: 400,
+            cornHarvest: 400,
+            water: 400,
+            gold: 400
         };
         
-        this.storageCapacity = 400;
+        this.storageCapacity = 2000;
         
         this.resourceCategories = {
             materials: {
@@ -183,23 +183,23 @@ export class Storage {
 
     resetToDefaults() {
         this.resources = {
-            wood: 200,
-            stone: 200,
-            ore: 0,
-            apple: 0,
-            pear: 0,
-            treeSeed: 0,
-            fruitSeed: 0,
-            wheatSeed: 5,
-            carrotSeed: 5,
-            tomatoSeed: 5,
-            cornSeed: 5,
-            wheatHarvest: 0,
-            carrotHarvest: 0,
-            tomatoHarvest: 0,
-            cornHarvest: 0,
-            water: 0,
-            gold: 200
+            wood: 400,
+            stone: 400,
+            ore: 400,
+            apple: 400,
+            pear: 400,
+            treeSeed: 400,
+            fruitSeed: 400,
+            wheatSeed: 400,
+            carrotSeed: 400,
+            tomatoSeed: 400,
+            cornSeed: 400,
+            wheatHarvest: 400,
+            carrotHarvest: 400,
+            tomatoHarvest: 400,
+            cornHarvest: 400,
+            water: 400,
+            gold: 400
         };
         this.buildings = [];
         this.farms = [];
@@ -223,7 +223,8 @@ export class Storage {
             const currentValue = this.resources[key] || 0;
             
             if (amount > 0) {
-                const maxCanAdd = this.storageCapacity - currentValue;
+                const totalResources = this.getTotalResourceAmount();
+                const maxCanAdd = this.storageCapacity - totalResources;
                 
                 if (maxCanAdd > 0) {
                     const actualAmount = Math.min(amount, maxCanAdd);
