@@ -160,19 +160,7 @@ export class BuildPanel {
             return;
         }
 
-        const resources = this.game.storage.getResources();
-        const missingResources = [];
-
-        for (const [key, value] of Object.entries(config.cost)) {
-            const current = resources[key] || 0;
-            if (current < value) {
-                const resourceInfo = this.game.storage.getResourceInfo(key);
-                const emoji = resourceInfo ? resourceInfo.emoji : '?';
-                const name = resourceInfo ? resourceInfo.name : key;
-                missingResources.push(`${emoji} ${name}: ${current}/${value}`);
-            }
-        }
-
+        const missingResources = this.getMissingResources(config.cost);
         if (missingResources.length > 0) {
             const message = `资源不足！\n需要：\n${missingResources.join('\n')}`;
             this.showError(message);
@@ -250,19 +238,7 @@ export class BuildPanel {
             return;
         }
 
-        const resources = this.game.storage.getResources();
-        const missingResources = [];
-
-        for (const [key, value] of Object.entries(config.cost)) {
-            const current = resources[key] || 0;
-            if (current < value) {
-                const resourceInfo = this.game.storage.getResourceInfo(key);
-                const emoji = resourceInfo ? resourceInfo.emoji : '?';
-                const name = resourceInfo ? resourceInfo.name : key;
-                missingResources.push(`${emoji} ${name}: ${current}/${value}`);
-            }
-        }
-
+        const missingResources = this.getMissingResources(config.cost);
         if (missingResources.length > 0) {
             const message = `资源不足！\n需要：\n${missingResources.join('\n')}`;
             this.showError(message);
@@ -731,7 +707,6 @@ export class BuildPanel {
     }
 
     updateBuildItemStates() {
-        const resources = this.game.storage.getResources();
         const buildItems = this.panel.querySelectorAll('.build-item');
 
         const hasDock = this.hasDock();
@@ -742,13 +717,7 @@ export class BuildPanel {
             const config = this.buildingTypes[type];
 
             if (config) {
-                let canAfford = true;
-                for (const [key, value] of Object.entries(config.cost)) {
-                    if ((resources[key] || 0) < value) {
-                        canAfford = false;
-                        break;
-                    }
-                }
+                const canAfford = this.hasEnoughResources(config.cost);
 
                 if (canAfford) {
                     item.classList.remove('disabled');
@@ -774,12 +743,7 @@ export class BuildPanel {
 
                 let canBuildShip = this.shipBuildingUnlocked && hasDock;
                 if (canBuildShip) {
-                    for (const [key, value] of Object.entries(shipConfig.cost)) {
-                        if ((resources[key] || 0) < value) {
-                            canBuildShip = false;
-                            break;
-                        }
-                    }
+                    canBuildShip = this.hasEnoughResources(shipConfig.cost);
                 }
 
                 if (canBuildShip) {
@@ -796,6 +760,39 @@ export class BuildPanel {
     hasDock() {
         const buildings = this.game.storage.getBuildings();
         return buildings.some(b => b.type === 'dock');
+    }
+
+    hasEnoughResources(cost) {
+        if (!cost || typeof cost !== 'object') return false;
+
+        const resources = this.game.storage.getResources();
+
+        for (const [key, value] of Object.entries(cost)) {
+            if ((resources[key] || 0) < value) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    getMissingResources(cost) {
+        if (!cost || typeof cost !== 'object') return [];
+
+        const resources = this.game.storage.getResources();
+        const missingResources = [];
+
+        for (const [key, value] of Object.entries(cost)) {
+            const current = resources[key] || 0;
+            if (current < value) {
+                const resourceInfo = this.game.storage.getResourceInfo(key);
+                const emoji = resourceInfo ? resourceInfo.emoji : '?';
+                const name = resourceInfo ? resourceInfo.name : key;
+                missingResources.push(`${emoji} ${name}: ${current}/${value}`);
+            }
+        }
+
+        return missingResources;
     }
 
     onResetClick() {
