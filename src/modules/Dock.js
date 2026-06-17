@@ -531,4 +531,6 @@ export class Dock {
             clearTimeout(this.sailTimer);
         }
         this.ships = [];
-        this.isS
+        this.isSailing = false;
+    }
+}

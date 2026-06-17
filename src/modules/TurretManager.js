@@ -131,3 +131,5 @@ export class TurretManager {
 
     reset() {
         this.clearAll();
+    }
+}

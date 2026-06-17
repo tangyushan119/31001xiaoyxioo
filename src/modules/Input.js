@@ -413,3 +413,5 @@ export class Input {
 
     getDraggedBuilding() {
         return this.draggedBuilding;
+    }
+}
