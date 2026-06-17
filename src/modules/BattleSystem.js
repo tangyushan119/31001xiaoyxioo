@@ -148,12 +148,25 @@ export class BattleSystem {
     }
     endBattle(victory) {
         const dock = this.game.getDock();
+        const ship = this.currentBattle.ship;
+        
         if (victory) {
             const storage = this.game.getStorage();
             Object.entries(this.currentBattle.lootCollected).forEach(([resource, amount]) => {
                 storage.modifyResource(resource, amount);
             });
-            dock.completeSail(this.currentBattle.destinationId, this.currentBattle.shipId);
+            
+            if (!dock.exploredLocations.includes(this.currentBattle.destinationId)) {
+                dock.exploredLocations.push(this.currentBattle.destinationId);
+            }
+            
+            ship.isDocked = true;
+            ship.currentDestination = null;
+            dock.isSailing = false;
+            dock.sailStartTime = null;
+            dock.currentDestination = null;
+            dock.saveToStorage();
+            
             let rewardText = "🏆 胜利返航！获得战利品：";
             Object.entries(this.currentBattle.lootCollected).forEach(([resource, amount]) => {
                 const info = storage.getResourceInfo(resource);
@@ -161,17 +174,19 @@ export class BattleSystem {
             });
             this.game.showToast(rewardText);
         } else {
-            const ship = this.currentBattle.ship;
             ship.isDocked = true;
             ship.currentDestination = null;
             dock.isSailing = false;
             dock.sailStartTime = null;
             dock.currentDestination = null;
+            dock.saveToStorage();
             this.game.showToast("💀 战败返航，损失惨重");
         }
+        
         const barracks = this.game.getBarracks();
         barracks.soldiers = { ...this.currentBattle.soldiers };
         barracks.saveToStorage();
+        
         this.isBattling = false;
         this.currentBattle = null;
         this.battleLog = [];

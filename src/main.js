@@ -47,6 +47,9 @@ export class Game {
         this.isRunning = false;
         this.isReady = false;
         
+        this.hoveredIsland = null;
+        this.selectedIsland = null;
+        
         this.init();
     }
 

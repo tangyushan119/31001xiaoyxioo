@@ -13,6 +13,7 @@ export class Input {
         
         this.game = null;
         this.draggedBuilding = null;
+        this.selectedIsland = null;
         
         this.init();
     }
@@ -206,6 +207,37 @@ export class Input {
         if (this.game && this.wasClicked()) {
             this.handleIslandClick();
         }
+        
+        this.updateHoveredIsland();
+    }
+    
+    updateHoveredIsland() {
+        if (!this.game || !this.game.dock) return;
+        
+        const mousePos = this.getCanvasMousePosition();
+        const destinations = this.game.dock.getDestinations();
+        const explored = this.game.dock.getExploredLocations();
+        
+        let hovered = null;
+        
+        for (const id of Object.keys(destinations)) {
+            if (id === 'home') continue;
+            
+            const pos = this.game.dock.getIslandPosition(id);
+            if (!pos) continue;
+            
+            const distance = Math.sqrt(
+                Math.pow(mousePos.x - pos.x, 2) + 
+                Math.pow(mousePos.y - pos.y, 2)
+            );
+            
+            if (distance <= pos.radius && explored.includes(id)) {
+                hovered = id;
+                break;
+            }
+        }
+        
+        this.game.hoveredIsland = hovered;
     }
     
     handleIslandClick() {
@@ -228,9 +260,13 @@ export class Input {
             
             if (distance <= pos.radius) {
                 if (explored.includes(id)) {
-                    this.game.showToast(`📍 已发现: ${destinations[id].emoji} ${destinations[id].name}`);
+                    this.selectedIsland = id;
+                    this.game.selectedIsland = id;
+                    
                     if (destinations[id].requiresSoldiers) {
-                        this.game.showToast(`⚠️ 该岛屿有敌人防御！需要士兵才能进攻`);
+                        this.showBattleConfirmModal(id);
+                    } else {
+                        this.game.showToast(`📍 已选中: ${destinations[id].emoji} ${destinations[id].name}`);
                     }
                 } else {
                     this.game.showToast(`❓ 未知岛屿，需要先探索`);
@@ -238,6 +274,126 @@ export class Input {
                 break;
             }
         }
+    }
+    
+    showBattleConfirmModal(islandId) {
+        const dock = this.game.dock;
+        const destination = dock.destinations[islandId];
+        const barracks = this.game.getBarracks();
+        const soldiers = barracks.getAllSoldiers();
+        const totalSoldiers = barracks.getTotalSoldiers();
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 30, 0.95);
+            border: 2px solid #ef4444;
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            z-index: 1000;
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.5);
+        `;
+        
+        const title = document.createElement('h3');
+        title.style.cssText = `
+            color: #ef4444;
+            text-align: center;
+            margin: 0 0 20px 0;
+            font-size: 24px;
+        `;
+        title.innerHTML = `⚔️ 进攻 ${destination.emoji} ${destination.name}`;
+        modal.appendChild(title);
+        
+        const dangerColors = { low: '#22c55e', medium: '#eab308', high: '#ef4444', extreme: '#dc2626' };
+        const dangerColor = dangerColors[destination.dangerLevel] || '#9ca3af';
+        
+        const info = document.createElement('div');
+        info.style.cssText = `
+            color: #ffffff;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        `;
+        info.innerHTML = `
+            <p><strong>危险等级:</strong> <span style="color: ${dangerColor}">${destination.dangerLevel || '未知'}</span></p>
+            <p><strong>预计战利品:</strong> ${destination.resources.map(r => dock.game.getStorage().getResourceInfo(r)?.emoji || '❓').join(' ')}</p>
+            <p><strong>我方兵力:</strong> ⚔️步兵 ${soldiers.infantry} 🏹弓箭手 ${soldiers.archer}</p>
+            <p><strong>消耗粮食:</strong> 🌾 ${dock.foodConsumptionPerSail[islandId]} 小麦</p>
+        `;
+        modal.appendChild(info);
+        
+        const buttons = document.createElement('div');
+        buttons.style.cssText = `
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        `;
+        
+        const attackBtn = document.createElement('button');
+        attackBtn.style.cssText = `
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        `;
+        attackBtn.textContent = '⚔️ 发起进攻';
+        attackBtn.onmouseover = () => attackBtn.style.transform = 'scale(1.05)';
+        attackBtn.onmouseout = () => attackBtn.style.transform = 'scale(1)';
+        attackBtn.onclick = () => {
+            modal.remove();
+            if (totalSoldiers === 0) {
+                this.game.showToast('⚠️ 需要至少一名士兵才能发起进攻！');
+                return;
+            }
+            
+            const ships = dock.getDockedShips();
+            if (ships.length === 0) {
+                this.game.showToast('⚠️ 需要有船只才能远航！');
+                return;
+            }
+            
+            const result = dock.startSail(islandId, ships[0].id);
+            this.game.showToast(result.message);
+        };
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.style.cssText = `
+            padding: 12px 30px;
+            background: #4b5563;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        `;
+        cancelBtn.textContent = '取消';
+        cancelBtn.onmouseover = () => cancelBtn.style.transform = 'scale(1.05)';
+        cancelBtn.onmouseout = () => cancelBtn.style.transform = 'scale(1)';
+        cancelBtn.onclick = () => modal.remove();
+        
+        buttons.appendChild(attackBtn);
+        buttons.appendChild(cancelBtn);
+        modal.appendChild(buttons);
+        
+        document.body.appendChild(modal);
+        
+        const closeModal = (e) => {
+            if (e.target === modal) {
+                modal.remove();
+                document.removeEventListener('click', closeModal);
+            }
+        };
+        document.addEventListener('click', closeModal);
     }
 
     reset() {

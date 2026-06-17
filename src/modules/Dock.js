@@ -203,40 +203,6 @@ export class Dock {
         return { canSail: true, reason: '' };
     }
     
-    startSail(destinationId, shipId) {
-        const canSailResult = this.canSail(destinationId, shipId);
-        if (!canSailResult.canSail) {
-            return { success: false, message: canSailResult.reason };
-        }
-        
-        const destination = this.destinations[destinationId];
-        const ship = this.ships.find(s => s.id === shipId);
-        
-        const foodNeeded = this.foodConsumptionPerSail[destinationId];
-        const storage = this.game.getStorage();
-        storage.modifyResource('wheatHarvest', -foodNeeded);
-        
-        ship.isDocked = false;
-        ship.currentDestination = destinationId;
-        
-        this.isSailing = true;
-        this.sailStartTime = Date.now();
-        this.currentDestination = destinationId;
-        
-        const adjustedDuration = this.sailDuration / ship.speed;
-        
-        setTimeout(() => {
-            this.completeSail(destinationId, shipId);
-        }, adjustedDuration);
-        
-        this.saveToStorage();
-        
-        return { 
-            success: true, 
-            message: `🚢 船只已出发前往 ${destination.emoji} ${destination.name}！消耗了 ${foodNeeded} 小麦` 
-        };
-    }
-    
     completeSail(destinationId, shipId) {
         const destination = this.destinations[destinationId];
         const ship = this.ships.find(s => s.id === shipId);
@@ -453,6 +419,8 @@ export class Dock {
         
         const destinations = this.getDestinations();
         const explored = this.getExploredLocations();
+        const selectedIsland = this.game.selectedIsland;
+        const hoveredIsland = this.game.hoveredIsland;
         
         let index = 0;
         Object.entries(destinations).forEach(([id, destination]) => {
@@ -466,10 +434,45 @@ export class Dock {
             
             ctx.save();
             
+            const isSelected = selectedIsland === id;
+            const isHovered = hoveredIsland === id;
+            
+            if (isSelected || isHovered) {
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, 50);
+                if (isSelected) {
+                    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.6)');
+                    gradient.addColorStop(0.5, 'rgba(239, 68, 68, 0.2)');
+                    gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                } else {
+                    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+                    gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.1)');
+                    gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                }
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, 50, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = isSelected ? '#ef4444' : '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.setLineDash(isHovered ? [5, 5] : []);
+                ctx.beginPath();
+                ctx.arc(x, y, 35, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
             if (explored.includes(id)) {
                 ctx.font = '40px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
+                
+                if (isSelected || isHovered) {
+                    ctx.shadowColor = isSelected ? '#ef4444' : '#3b82f6';
+                    ctx.shadowBlur = 15;
+                }
+                
                 ctx.fillText(destination.emoji, x, y);
                 
                 ctx.font = '12px Arial';
