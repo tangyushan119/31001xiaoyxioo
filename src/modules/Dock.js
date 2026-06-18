@@ -14,6 +14,8 @@ export class Dock {
         this.foodConsumptionPerSail = { ...FOOD_CONSUMPTION_PER_SAIL };
         this.sailingShipId = null;
         this.sailTimer = null;
+        this.destroyedIslands = new Set();
+        this.refreshTimers = {};
 
         this.init();
     }
@@ -429,8 +431,24 @@ export class Dock {
 
             ctx.save();
 
+            const isDestroyed = this.destroyedIslands.has(id);
             const isSelected = selectedIsland === id;
             const isHovered = hoveredIsland === id;
+
+            if (isDestroyed) {
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillText('💥', x, y);
+
+                ctx.font = '10px Arial';
+                ctx.fillText('废墟', x, y + 25);
+
+                ctx.restore();
+                index++;
+                return;
+            }
 
             if (isSelected || isHovered) {
                 const gradient = ctx.createRadialGradient(x, y, 0, x, y, 50);
@@ -514,12 +532,34 @@ export class Dock {
         };
     }
 
-    refreshEnemyIsland(islandId) {
+    destroyAndRefreshEnemyIsland(islandId) {
         const destinations = Object.keys(this.destinations);
         const enemyIds = destinations.filter(id => this.destinations[id].requiresSoldiers);
         
         if (!enemyIds.includes(islandId)) return;
 
+        if (this.refreshTimers[islandId]) {
+            clearTimeout(this.refreshTimers[islandId]);
+            delete this.refreshTimers[islandId];
+        }
+
+        this.destroyedIslands.add(islandId);
+
+        const refreshDelay = 2000;
+
+        this.refreshTimers[islandId] = setTimeout(() => {
+            this.spawnNewEnemyIsland(islandId);
+            delete this.refreshTimers[islandId];
+        }, refreshDelay);
+
+        return {
+            success: true,
+            message: `💥 ${this.destinations[islandId].emoji} ${this.destinations[islandId].name} 已被摧毁！新岛屿即将出现...`,
+            refreshDelay
+        };
+    }
+
+    spawnNewEnemyIsland(islandId) {
         const templates = [...ENEMY_ISLAND_TEMPLATES];
         const currentTemplate = this.destinations[islandId];
         
@@ -536,12 +576,17 @@ export class Dock {
         };
 
         this.destinations[islandId] = newIsland;
+        this.destroyedIslands.delete(islandId);
 
         if (!this.exploredLocations.includes(islandId)) {
             this.exploredLocations.push(islandId);
         }
 
         this.saveToStorage();
+
+        if (this.game) {
+            this.game.showToast(`🌋 新的 ${newIsland.emoji} ${newIsland.name} 已出现！危险等级: ${newIsland.dangerLevel}`);
+        }
 
         return {
             success: true,
@@ -553,6 +598,9 @@ export class Dock {
         if (this.sailTimer) {
             clearTimeout(this.sailTimer);
         }
+        Object.values(this.refreshTimers).forEach(timer => clearTimeout(timer));
+        this.refreshTimers = {};
+        this.destroyedIslands.clear();
         this.ships = [];
         this.isSailing = false;
     }

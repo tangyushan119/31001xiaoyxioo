@@ -118,11 +118,13 @@ export class Input {
 
         const mousePos = this.getCanvasMousePosition();
         const destinations = this.game.dock.getDestinations();
+        const destroyedIslands = this.game.dock.destroyedIslands || new Set();
 
         let hovered = null;
 
         for (const id of Object.keys(destinations)) {
             if (id === 'home') continue;
+            if (destroyedIslands.has(id)) continue;
 
             const pos = this.game.dock.getIslandPosition(id);
             if (!pos) continue;
@@ -146,9 +148,11 @@ export class Input {
 
         const mousePos = this.getCanvasMousePosition();
         const destinations = this.game.dock.getDestinations();
+        const destroyedIslands = this.game.dock.destroyedIslands || new Set();
 
         for (const id of Object.keys(destinations)) {
             if (id === 'home') continue;
+            if (destroyedIslands.has(id)) continue;
 
             const pos = this.game.dock.getIslandPosition(id);
             if (!pos) continue;

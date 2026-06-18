@@ -259,8 +259,10 @@ export class Game {
 
         if (this.dock) {
             const destinations = this.dock.getDestinations();
+            const destroyedIslands = this.dock.destroyedIslands || new Set();
             for (const id of Object.keys(destinations)) {
                 if (id === 'home') continue;
+                if (destroyedIslands.has(id)) continue;
                 const pos = this.dock.getIslandPosition(id);
                 if (!pos) continue;
                 const distance = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));

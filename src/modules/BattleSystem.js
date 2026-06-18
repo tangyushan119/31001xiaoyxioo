@@ -167,7 +167,7 @@ export class BattleSystem {
             dock.sailStartTime = null;
             dock.currentDestination = null;
             
-            const refreshResult = dock.refreshEnemyIsland(destinationId);
+            const refreshResult = dock.destroyAndRefreshEnemyIsland(destinationId);
             dock.saveToStorage();
             
             let rewardText = "🏆 胜利返航！获得战利品：";
@@ -178,9 +178,7 @@ export class BattleSystem {
             this.game.showToast(rewardText);
             
             if (refreshResult && refreshResult.success) {
-                setTimeout(() => {
-                    this.game.showToast(refreshResult.message);
-                }, 2000);
+                this.game.showToast(refreshResult.message);
             }
         } else {
             ship.isDocked = true;
