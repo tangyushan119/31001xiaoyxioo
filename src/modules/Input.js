@@ -118,7 +118,6 @@ export class Input {
 
         const mousePos = this.getCanvasMousePosition();
         const destinations = this.game.dock.getDestinations();
-        const explored = this.game.dock.getExploredLocations();
 
         let hovered = null;
 
@@ -133,7 +132,7 @@ export class Input {
                 Math.pow(mousePos.y - pos.y, 2)
             );
 
-            if (distance <= pos.radius && explored.includes(id)) {
+            if (distance <= pos.radius) {
                 hovered = id;
                 break;
             }
@@ -147,7 +146,6 @@ export class Input {
 
         const mousePos = this.getCanvasMousePosition();
         const destinations = this.game.dock.getDestinations();
-        const explored = this.game.dock.getExploredLocations();
 
         for (const id of Object.keys(destinations)) {
             if (id === 'home') continue;
@@ -161,20 +159,14 @@ export class Input {
             );
 
             if (distance <= pos.radius) {
-                if (explored.includes(id)) {
-                    this.selectedIsland = id;
-                    this.game.selectedIsland = id;
+                this.selectedIsland = id;
+                this.game.selectedIsland = id;
 
-                    if (destinations[id].requiresSoldiers) {
-                        this.showBattleConfirmModal(id);
-                    } else {
-                        if (this.game.buildPanel) {
-                            this.game.buildPanel.showSuccess(`已选中: ${destinations[id].emoji} ${destinations[id].name}`);
-                        }
-                    }
+                if (destinations[id].requiresSoldiers) {
+                    this.showBattleConfirmModal(id);
                 } else {
                     if (this.game.buildPanel) {
-                        this.game.buildPanel.showError('未知区域，需要先探索');
+                        this.game.buildPanel.showSuccess(`已选中: ${destinations[id].emoji} ${destinations[id].name}`);
                     }
                 }
                 break;

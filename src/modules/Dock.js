@@ -414,7 +414,6 @@ export class Dock {
         const beachOuterRadius = terrain.getBeachOuterRadius();
 
         const destinations = this.getDestinations();
-        const explored = this.getExploredLocations();
         const selectedIsland = this.game.selectedIsland;
         const hoveredIsland = this.game.hoveredIsland;
 
@@ -459,42 +458,31 @@ export class Dock {
                 ctx.setLineDash([]);
             }
 
-            if (explored.includes(id)) {
-                ctx.font = '40px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+            ctx.font = '40px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
-                if (isSelected || isHovered) {
-                    ctx.shadowColor = isSelected ? '#ef4444' : '#3b82f6';
-                    ctx.shadowBlur = 15;
-                }
-
-                ctx.fillText(destination.emoji, x, y);
-
-                ctx.font = '12px Arial';
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(destination.name, x, y + 35);
-
-                if (destination.requiresSoldiers) {
-                    ctx.font = '14px Arial';
-                    ctx.fillStyle = '#ef4444';
-                    ctx.fillText('⚔️', x, y - 35);
-                }
-
-                ctx.font = '10px Arial';
-                const dangerColors = { low: '#22c55e', medium: '#eab308', high: '#ef4444', extreme: '#dc2626' };
-                ctx.fillStyle = dangerColors[destination.dangerLevel] || '#9ca3af';
-                ctx.fillText('危险: ' + (destination.dangerLevel || '低'), x, y + 50);
-            } else {
-                ctx.font = '30px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.fillText('?', x, y);
-
-                ctx.font = '10px Arial';
-                ctx.fillText('???', x, y + 25);
+            if (isSelected || isHovered) {
+                ctx.shadowColor = isSelected ? '#ef4444' : '#3b82f6';
+                ctx.shadowBlur = 15;
             }
+
+            ctx.fillText(destination.emoji, x, y);
+
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(destination.name, x, y + 35);
+
+            if (destination.requiresSoldiers) {
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#ef4444';
+                ctx.fillText('⚔️', x, y - 35);
+            }
+
+            ctx.font = '10px Arial';
+            const dangerColors = { low: '#22c55e', medium: '#eab308', high: '#ef4444', extreme: '#dc2626' };
+            ctx.fillStyle = dangerColors[destination.dangerLevel] || '#9ca3af';
+            ctx.fillText('危险: ' + (destination.dangerLevel || '低'), x, y + 50);
 
             ctx.restore();
 

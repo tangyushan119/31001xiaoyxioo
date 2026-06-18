@@ -259,25 +259,18 @@ export class Game {
 
         if (this.dock) {
             const destinations = this.dock.getDestinations();
-            const explored = this.dock.getExploredLocations();
             for (const id of Object.keys(destinations)) {
                 if (id === 'home') continue;
                 const pos = this.dock.getIslandPosition(id);
                 if (!pos) continue;
                 const distance = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
                 if (distance <= pos.radius) {
-                    if (explored.includes(id)) {
-                        this.selectedIsland = id;
-                        if (destinations[id].requiresSoldiers) {
-                            input.showBattleConfirmModal(id);
-                        } else {
-                            if (this.buildPanel) {
-                                this.buildPanel.showSuccess(`已选中: ${destinations[id].emoji} ${destinations[id].name}`);
-                            }
-                        }
+                    this.selectedIsland = id;
+                    if (destinations[id].requiresSoldiers) {
+                        input.showBattleConfirmModal(id);
                     } else {
                         if (this.buildPanel) {
-                            this.buildPanel.showError('未知区域，需要先探索');
+                            this.buildPanel.showSuccess(`已选中: ${destinations[id].emoji} ${destinations[id].name}`);
                         }
                     }
                     input.mouse.clicked = false;
