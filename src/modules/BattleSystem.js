@@ -149,6 +149,7 @@ export class BattleSystem {
     endBattle(victory) {
         const dock = this.game.getDock();
         const ship = this.currentBattle.ship;
+        const destinationId = this.currentBattle.destinationId;
         
         if (victory) {
             const storage = this.game.getStorage();
@@ -156,8 +157,8 @@ export class BattleSystem {
                 storage.modifyResource(resource, amount);
             });
             
-            if (!dock.exploredLocations.includes(this.currentBattle.destinationId)) {
-                dock.exploredLocations.push(this.currentBattle.destinationId);
+            if (!dock.exploredLocations.includes(destinationId)) {
+                dock.exploredLocations.push(destinationId);
             }
             
             ship.isDocked = true;
@@ -165,6 +166,8 @@ export class BattleSystem {
             dock.isSailing = false;
             dock.sailStartTime = null;
             dock.currentDestination = null;
+            
+            const refreshResult = dock.refreshEnemyIsland(destinationId);
             dock.saveToStorage();
             
             let rewardText = "🏆 胜利返航！获得战利品：";
@@ -173,6 +176,12 @@ export class BattleSystem {
                 rewardText += " " + (info?.emoji || "❓") + " " + (info?.name || resource) + " x" + amount;
             });
             this.game.showToast(rewardText);
+            
+            if (refreshResult && refreshResult.success) {
+                setTimeout(() => {
+                    this.game.showToast(refreshResult.message);
+                }, 2000);
+            }
         } else {
             ship.isDocked = true;
             ship.currentDestination = null;

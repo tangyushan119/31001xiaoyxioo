@@ -1,4 +1,4 @@
-import { SHIP_TYPES, DESTINATIONS, FOOD_CONSUMPTION_PER_SAIL, GAME_CONFIG } from '../config.js';
+import { SHIP_TYPES, DESTINATIONS, FOOD_CONSUMPTION_PER_SAIL, GAME_CONFIG, ENEMY_ISLAND_TEMPLATES } from '../config.js';
 
 export class Dock {
     constructor(game) {
@@ -511,6 +511,41 @@ export class Dock {
             x: center.x + Math.cos(angle) * distance,
             y: center.y + Math.sin(angle) * distance,
             radius: 30
+        };
+    }
+
+    refreshEnemyIsland(islandId) {
+        const destinations = Object.keys(this.destinations);
+        const enemyIds = destinations.filter(id => this.destinations[id].requiresSoldiers);
+        
+        if (!enemyIds.includes(islandId)) return;
+
+        const templates = [...ENEMY_ISLAND_TEMPLATES];
+        const currentTemplate = this.destinations[islandId];
+        
+        let newTemplate;
+        do {
+            newTemplate = templates[Math.floor(Math.random() * templates.length)];
+        } while (newTemplate.name === currentTemplate.name && templates.length > 1);
+
+        const newIsland = {
+            ...newTemplate,
+            distance: this.destinations[islandId].distance,
+            requiresSoldiers: true,
+            defeatedCount: (this.destinations[islandId].defeatedCount || 0) + 1
+        };
+
+        this.destinations[islandId] = newIsland;
+
+        if (!this.exploredLocations.includes(islandId)) {
+            this.exploredLocations.push(islandId);
+        }
+
+        this.saveToStorage();
+
+        return {
+            success: true,
+            message: `🌋 新的 ${newIsland.emoji} ${newIsland.name} 已出现！危险等级: ${newIsland.dangerLevel}`
         };
     }
 

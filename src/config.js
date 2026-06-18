@@ -291,6 +291,17 @@ export const DESTINATIONS = {
     }
 };
 
+export const ENEMY_ISLAND_TEMPLATES = [
+    { emoji: '🏴‍☠️', name: '海盗岛', dangerLevel: 'high', resources: ['gold', 'ore', 'fruitSeed'] },
+    { emoji: '🏯', name: '要塞岛', dangerLevel: 'high', resources: ['gold', 'ore', 'wood'] },
+    { emoji: '🐉', name: '恶龙岛', dangerLevel: 'extreme', resources: ['gold', 'ore', 'pear'] },
+    { emoji: '🦇', name: '蝙蝠岛', dangerLevel: 'high', resources: ['gold', 'ore', 'apple'] },
+    { emoji: '💀', name: '骷髅岛', dangerLevel: 'high', resources: ['gold', 'ore', 'treeSeed'] },
+    { emoji: '🔥', name: '火焰岛', dangerLevel: 'extreme', resources: ['gold', 'ore', 'fruitSeed'] },
+    { emoji: '💀', name: '亡灵岛', dangerLevel: 'extreme', resources: ['gold', 'ore', 'pear'] },
+    { emoji: '🗡️', name: '武士岛', dangerLevel: 'high', resources: ['gold', 'ore', 'wood'] }
+];
+
 export const FOOD_CONSUMPTION_PER_SAIL = {
     nearbyIsland: 10,
     resourceIsland: 20,
