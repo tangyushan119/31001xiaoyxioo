@@ -23,6 +23,8 @@ export class BuildPanel {
         this.selectedDestinationId = null;
         this.currentFoodCost = 0;
         this.shipBuildingUnlocked = false;
+        this.barracksBuilt = this.hasBarracks();
+        this.setupTrainingPanel();
     }
 
     unlockShipBuilding() {
@@ -726,10 +728,12 @@ export class BuildPanel {
         const buildItems = this.panel.querySelectorAll('.build-item');
 
         const hasDock = this.hasDock();
+        const hasBarracks = this.hasBarracks();
 
         buildItems.forEach(item => {
             const type = item.dataset.type;
             const shipType = item.dataset.ship;
+            const soldierType = item.dataset.soldier;
             const config = this.buildingTypes[type];
 
             if (config) {
@@ -770,12 +774,148 @@ export class BuildPanel {
                     item.style.cursor = 'not-allowed';
                 }
             }
+
+            if (soldierType) {
+                if (hasBarracks && this.game.barracks) {
+                    const canTrain = this.game.barracks.canTrain(soldierType);
+                    if (canTrain) {
+                        item.classList.remove('disabled');
+                        item.style.cursor = 'pointer';
+                    } else {
+                        item.classList.add('disabled');
+                        item.style.cursor = 'not-allowed';
+                    }
+                } else {
+                    item.classList.add('disabled');
+                    item.style.cursor = 'not-allowed';
+                }
+            }
         });
     }
 
     hasDock() {
         const buildings = this.game.storage.getBuildings();
         return buildings.some(b => b.type === 'dock');
+    }
+
+    hasBarracks() {
+        const buildings = this.game.storage.getBuildings();
+        return buildings.some(b => b.type === 'barracks');
+    }
+
+    setupTrainingPanel() {
+        const panel = document.getElementById('training-panel');
+        if (!panel) return;
+
+        const minusBtns = panel.querySelectorAll('.training-minus-btn');
+        const plusBtns = panel.querySelectorAll('.training-plus-btn');
+        const startBtns = panel.querySelectorAll('.training-start-btn');
+        const inputs = panel.querySelectorAll('.training-count-input');
+
+        minusBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const input = inputs[index];
+                let val = parseInt(input.value) || 1;
+                input.value = Math.max(1, val - 1);
+            });
+        });
+
+        plusBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const input = inputs[index];
+                let val = parseInt(input.value) || 1;
+                input.value = Math.min(99, val + 1);
+            });
+        });
+
+        startBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const trainingItem = btn.closest('.training-item');
+                const soldierType = trainingItem.dataset.type;
+                const input = inputs[index];
+                const count = parseInt(input.value) || 1;
+                this.onBatchTrainSoldier(soldierType, count);
+            });
+        });
+    }
+
+    showTrainingPanel() {
+        const panel = document.getElementById('training-panel');
+        if (!panel) return;
+        this.updateTrainingPanel();
+        panel.style.display = 'block';
+    }
+
+    hideTrainingPanel() {
+        const panel = document.getElementById('training-panel');
+        if (!panel) return;
+        panel.style.display = 'none';
+    }
+
+    updateTrainingPanel() {
+        if (!this.game.barracks) return;
+
+        const soldiers = this.game.barracks.getAllSoldiers();
+        const infantryCount = document.getElementById('infantry-count');
+        const archerCount = document.getElementById('archer-count');
+
+        if (infantryCount) infantryCount.textContent = soldiers.infantry || 0;
+        if (archerCount) archerCount.textContent = soldiers.archer || 0;
+
+        this.updateTrainingQueue();
+    }
+
+    updateTrainingQueue() {
+        if (!this.game.barracks) return;
+
+        const queue = this.game.barracks.getTrainingQueue();
+        const queueElement = document.getElementById('training-queue');
+        if (!queueElement) return;
+
+        if (queue.length === 0) {
+            queueElement.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">暂无训练中的士兵</div>';
+            return;
+        }
+
+        const progressList = this.game.barracks.getTrainingProgress();
+        queueElement.innerHTML = '';
+
+        progressList.forEach(item => {
+            const info = this.game.barracks.getSoldierInfo(item.type);
+            const queueItem = document.createElement('div');
+            queueItem.className = 'training-queue-item';
+            queueItem.innerHTML = `
+                <span class="training-queue-emoji">${info.emoji}</span>
+                <div class="training-queue-info">
+                    <div class="training-queue-name">${info.name}</div>
+                    <div class="training-queue-progress-bar">
+                        <div class="training-queue-progress-fill" style="width: ${item.progress}%"></div>
+                    </div>
+                </div>
+                <span class="training-queue-percent">${Math.round(item.progress)}%</span>
+            `;
+            queueElement.appendChild(queueItem);
+        });
+    }
+
+    onBatchTrainSoldier(soldierType, count) {
+        if (!this.game.barracks) return;
+
+        const result = this.game.barracks.train(soldierType, count);
+
+        if (result.success) {
+            this.showSuccess(result.message);
+            this.updateResourceDisplay();
+            this.updateTrainingPanel();
+        } else {
+            this.showError(result.message);
+        }
+    }
+
+    unlockTraining() {
+        this.barracksBuilt = true;
+        this.updateBuildItemStates();
+        this.showSuccess('兵营已建造！训练功能已解锁！');
     }
 
     hasEnoughResources(cost) {

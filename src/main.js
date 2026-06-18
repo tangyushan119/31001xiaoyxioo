@@ -169,6 +169,10 @@ export class Game {
         if (this.battleSystem) {
             this.battleSystem.update(deltaTime);
         }
+
+        if (this.buildPanel) {
+            this.buildPanel.updateTrainingPanel();
+        }
     }
 
     render() {
@@ -186,6 +190,12 @@ export class Game {
 
     onBuildingClick(building) {
         this.modules.playerMovement.onBuildingClick(building);
+
+        if (building.type === 'barracks') {
+            if (this.buildPanel) {
+                this.buildPanel.showTrainingPanel();
+            }
+        }
     }
 
     handleCanvasClick(x, y) {

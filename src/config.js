@@ -1,4 +1,4 @@
-﻿export const GAME_CONFIG = {
+export const GAME_CONFIG = {
     STORAGE_KEY: 'islandGameData',
     STORAGE_VERSION: 3,
     AUTO_SAVE_INTERVAL: 5000,
@@ -182,6 +182,15 @@ export const BUILDING_TYPES = {
         health: 200,
         maxHealth: 200,
         isDock: true
+    },
+    barracks: {
+        name: '兵营',
+        emoji: '🏰',
+        cost: { wood: 60, stone: 45 },
+        size: 60,
+        health: 250,
+        maxHealth: 250,
+        isBarracks: true
     }
 };
 

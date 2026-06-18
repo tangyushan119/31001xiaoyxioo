@@ -909,6 +909,230 @@
             font-size: 13px;
             font-weight: 500;
         }
+
+        #training-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 420px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .training-panel-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .training-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .soldier-counts {
+            display: flex;
+            gap: 15px;
+        }
+
+        .soldier-count-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            gap: 8px;
+        }
+
+        .soldier-emoji {
+            font-size: 32px;
+        }
+
+        .soldier-name {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .soldier-count {
+            color: #4ade80;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .training-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .training-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .training-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .training-emoji {
+            font-size: 32px;
+        }
+
+        .training-info {
+            flex: 1;
+        }
+
+        .training-name {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .training-cost {
+            color: #fbbf24;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .training-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+        }
+
+        .training-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .training-minus-btn, .training-plus-btn {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .training-minus-btn:hover, .training-plus-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+        }
+
+        .training-count-input {
+            width: 50px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .training-count-input:focus {
+            border-color: #3b82f6;
+        }
+
+        .training-start-btn {
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .training-start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .training-start-btn.disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .training-queue {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .training-queue-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(251, 191, 36, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .training-queue-emoji {
+            font-size: 20px;
+        }
+
+        .training-queue-info {
+            flex: 1;
+        }
+
+        .training-queue-name {
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .training-queue-progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .training-queue-progress-fill {
+            height: 100%;
+            background: #fbbf24;
+            border-radius: 3px;
+            transition: width 0.1s ease;
+        }
+
+        .training-queue-percent {
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -974,8 +1198,9 @@
                     <span class="category-arrow">▶</span>
                 </button>
                 <div class="sub-items" data-category="barracks">
-                    <div class="build-item soldier-train-btn" data-soldier="infantry" title="训练步兵 - 消耗: 20💰 + 10🌾">⚔️</div>
-                    <div class="build-item soldier-train-btn" data-soldier="archer" title="训练弓箭手 - 消耗: 35💰 + 15🌾">🏹</div>
+                    <div class="build-item" data-type="barracks" draggable="true" title="兵营 - 训练士兵的必要设施\n消耗: 60🪵 + 45🪨">🏰</div>
+                    <div class="build-item soldier-train-btn disabled" data-soldier="infantry" title="训练步兵 - 消耗: 20💰 + 10🌾">⚔️</div>
+                    <div class="build-item soldier-train-btn disabled" data-soldier="archer" title="训练弓箭手 - 消耗: 35💰 + 15🌾">🏹</div>
                 </div>
             </div>
             
@@ -1118,6 +1343,67 @@
             </div>
         </div>
         <button id="sail-from-ship-panel" class="sail-button" onclick="document.getElementById('ship-building-panel').style.display = 'none'; window.game.buildPanel.showSailPanel()">🚢 出发远航</button>
+    </div>
+
+    <div id="training-panel" style="display: none;">
+        <div class="ship-panel-header">
+            <h3>🏰 兵营训练</h3>
+            <button class="close-btn" onclick="document.getElementById('training-panel').style.display = 'none'">×</button>
+        </div>
+        <div class="training-panel-content">
+            <div class="training-section">
+                <div class="section-title">士兵数量</div>
+                <div class="soldier-counts">
+                    <div class="soldier-count-item">
+                        <span class="soldier-emoji">⚔️</span>
+                        <span class="soldier-name">步兵</span>
+                        <span class="soldier-count" id="infantry-count">0</span>
+                    </div>
+                    <div class="soldier-count-item">
+                        <span class="soldier-emoji">🏹</span>
+                        <span class="soldier-name">弓箭手</span>
+                        <span class="soldier-count" id="archer-count">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="training-section">
+                <div class="section-title">训练士兵</div>
+                <div class="training-list">
+                    <div class="training-item" data-type="infantry">
+                        <span class="training-emoji">⚔️</span>
+                        <div class="training-info">
+                            <div class="training-name">步兵</div>
+                            <div class="training-cost">💰 20 🌾 10</div>
+                            <div class="training-desc">基础近战单位，攻防均衡</div>
+                        </div>
+                        <div class="training-controls">
+                            <button class="training-minus-btn">-</button>
+                            <input type="number" class="training-count-input" value="1" min="1" max="99">
+                            <button class="training-plus-btn">+</button>
+                            <button class="training-start-btn">训练</button>
+                        </div>
+                    </div>
+                    <div class="training-item" data-type="archer">
+                        <span class="training-emoji">🏹</span>
+                        <div class="training-info">
+                            <div class="training-name">弓箭手</div>
+                            <div class="training-cost">💰 35 🌾 15</div>
+                            <div class="training-desc">远程攻击单位，攻击力高</div>
+                        </div>
+                        <div class="training-controls">
+                            <button class="training-minus-btn">-</button>
+                            <input type="number" class="training-count-input" value="1" min="1" max="99">
+                            <button class="training-plus-btn">+</button>
+                            <button class="training-start-btn">训练</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="training-section">
+                <div class="section-title">训练队列</div>
+                <div class="training-queue" id="training-queue"></div>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="src/main.js"></script>

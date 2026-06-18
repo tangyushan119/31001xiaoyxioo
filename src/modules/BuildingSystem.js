@@ -199,6 +199,10 @@ export class BuildingSystem {
             }
         }
 
+        if (buildingConfig.isBarracks && this.game.buildPanel) {
+            this.game.buildPanel.unlockTraining();
+        }
+
         if (this.game.buildPanel) {
             this.game.buildPanel.showSuccess(`成功建造 ${buildingConfig.name}！`);
             this.game.buildPanel.updateResourceDisplay();

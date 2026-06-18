@@ -194,7 +194,7 @@ export class Input {
             return;
         }
 
-        const soldiers = barracks.getSoldiers();
+        const soldiers = barracks.getAllSoldiers();
         const totalSoldiers = barracks.getTotalSoldiers();
 
         const modal = document.createElement('div');
@@ -227,8 +227,8 @@ export class Input {
 
         const storage = this.game.storage;
         const resourceEmojis = destination.resources.map(r => storage.getResourceInfo(r)?.emoji || '?').join(' ');
-        const infantryCount = soldiers.filter(s => s.type === 'infantry').length;
-        const archerCount = soldiers.filter(s => s.type === 'archer').length;
+        const infantryCount = soldiers.infantry || 0;
+        const archerCount = soldiers.archer || 0;
 
         const info = document.createElement('div');
         info.style.cssText = `

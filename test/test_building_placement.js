@@ -47,7 +47,7 @@ export class BuildingPlacementTest {
     testBuildingTypes() {
         this.logTest('建筑类型定义测试');
         
-        const expectedTypes = ['residence', 'storageHouse', 'house', 'hut', 'storage', 'farm', 'fishing', 'campfire', 'well', 'machineGun', 'catapult', 'dock'];
+        const expectedTypes = ['residence', 'storageHouse', 'house', 'hut', 'storage', 'farm', 'fishing', 'campfire', 'well', 'machineGun', 'catapult', 'dock', 'barracks'];
         
         if (window.game && window.game.buildPanel) {
             const buildingTypes = window.game.buildPanel.getBuildingTypes();
