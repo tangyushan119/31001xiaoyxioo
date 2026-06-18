@@ -185,7 +185,7 @@ export const BUILDING_TYPES = {
     },
     barracks: {
         name: '兵营',
-        emoji: '🏰',
+        emoji: '🏭',
         cost: { wood: 60, stone: 45 },
         size: 60,
         health: 250,

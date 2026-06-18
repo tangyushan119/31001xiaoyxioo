@@ -230,7 +230,7 @@ export class Barracks {
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'left';
-        ctx.fillText('🏰 训练中', panelX + 10, panelY + 25);
+        ctx.fillText('🏭 训练中', panelX + 10, panelY + 25);
         
         progressList.forEach((item, index) => {
             const y = panelY + 45 + index * 35;
