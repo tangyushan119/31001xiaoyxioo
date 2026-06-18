@@ -172,7 +172,8 @@ export class BuildingSystem {
             goldPerSecond: buildingConfig.goldPerSecond,
             storageBonus: buildingConfig.storageBonus,
             isTurret: buildingConfig.isTurret,
-            isDock: buildingConfig.isDock
+            isDock: buildingConfig.isDock,
+            isBarracks: buildingConfig.isBarracks
         };
 
         this.game.storage.addBuilding(building);

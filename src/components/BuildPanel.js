@@ -190,7 +190,8 @@ export class BuildPanel {
             goldPerSecond: config.goldPerSecond,
             storageBonus: config.storageBonus,
             isTurret: config.isTurret,
-            isDock: config.isDock
+            isDock: config.isDock,
+            isBarracks: config.isBarracks
         };
 
         this.game.storage.consumeResources(config.cost);
@@ -442,14 +443,7 @@ export class BuildPanel {
     onTrainSoldier(soldierType) {
         if (!this.game.barracks) return;
 
-        const result = this.game.barracks.train(soldierType);
-
-        if (result.success) {
-            this.showSuccess(result.message);
-            this.updateResourceDisplay();
-        } else {
-            this.showError(result.message);
-        }
+        this.showTrainingPanel();
     }
 
     onBuildItemHover(e) {
@@ -738,8 +732,9 @@ export class BuildPanel {
 
             if (config) {
                 const canAfford = this.hasEnoughResources(config.cost);
+                const hasPrerequisites = this.hasPrerequisites(config.requires);
 
-                if (canAfford) {
+                if (canAfford && hasPrerequisites) {
                     item.classList.remove('disabled');
                     item.classList.add('can-afford');
                     item.style.cursor = 'pointer';
@@ -801,6 +796,17 @@ export class BuildPanel {
     hasBarracks() {
         const buildings = this.game.storage.getBuildings();
         return buildings.some(b => b.type === 'barracks');
+    }
+
+    hasPrerequisites(requires) {
+        if (!requires || !Array.isArray(requires) || requires.length === 0) {
+            return true;
+        }
+
+        const buildings = this.game.storage.getBuildings();
+        const buildingTypes = buildings.map(b => b.type);
+
+        return requires.some(reqType => buildingTypes.includes(reqType));
     }
 
     setupTrainingPanel() {

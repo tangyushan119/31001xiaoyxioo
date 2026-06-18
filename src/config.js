@@ -190,7 +190,8 @@ export const BUILDING_TYPES = {
         size: 60,
         health: 250,
         maxHealth: 250,
-        isBarracks: true
+        isBarracks: true,
+        requires: ['house', 'hut', 'residence']
     }
 };
 
