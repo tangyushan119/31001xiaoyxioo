@@ -101,8 +101,8 @@ export class Input {
     }
 
     handleEscape() {
-        if (this.game && this.game.buildingSystem) {
-            this.game.buildingSystem.cancelPlacement();
+        if (this.game && this.game.modules && this.game.modules.buildingSystem) {
+            this.game.modules.buildingSystem.cancelPlacement();
         }
         
         if (this.game) {

@@ -245,7 +245,7 @@ export class Turret {
         if (this.config.refund) {
             let refundText = '';
             for (const [resource, amount] of Object.entries(this.config.refund)) {
-                this.game.resourceManager.addResource(resource, amount);
+                this.game.storage.modifyResource(resource, amount);
                 const resourceInfo = this.game.storage.getResourceInfo(resource);
                 const emoji = resourceInfo ? resourceInfo.emoji : '❓';
                 const name = resourceInfo ? resourceInfo.name : resource;

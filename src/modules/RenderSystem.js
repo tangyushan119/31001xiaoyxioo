@@ -92,19 +92,24 @@ export class RenderSystem {
 
     renderBuildingPreview() {
         const renderer = this.game.renderer;
-        if (!renderer || !this.game.buildPanel) return;
+        const buildingSystem = this.game.modules?.buildingSystem;
+        const buildPanel = this.game.buildPanel;
+        
+        if (!renderer || !buildingSystem || !buildPanel) return;
 
-        const selectedBuilding = this.game.buildPanel.selectedBuilding;
-        const previewPos = this.game.buildPanel.previewBuildingPosition;
+        const selectedBuilding = buildingSystem.getPlacingBuildingType();
+        const previewPos = buildingSystem.getPreviewPosition();
 
         if (!selectedBuilding || !previewPos) return;
 
-        const buildingConfig = this.game.buildPanel.buildingTypes[selectedBuilding];
+        const buildingConfig = buildPanel.buildingTypes[selectedBuilding];
         if (!buildingConfig) return;
 
-        const canBuild = this.game.terrain.canBuildAt(previewPos.x, previewPos.y) &&
-                        this.game.buildPanel.isSpaceAvailable(previewPos.x, previewPos.y, buildingConfig.size) &&
-                        !this.game.buildPanel.isOverlappingFarmArea(previewPos.x, previewPos.y, buildingConfig.size);
+        const canBuild = (this.game.terrain && (buildingConfig.isDock 
+                        ? this.game.terrain.canBuildDockOnBeachAt(previewPos.x, previewPos.y)
+                        : this.game.terrain.canBuildAt(previewPos.x, previewPos.y))) &&
+                        buildingSystem.isSpaceAvailable(previewPos.x, previewPos.y, buildingConfig.size) &&
+                        !buildingSystem.isOverlappingFarmArea(previewPos.x, previewPos.y, buildingConfig.size);
 
         renderer.drawPreviewRect(previewPos.x, previewPos.y, buildingConfig.size, canBuild);
         renderer.drawEmoji(buildingConfig.emoji, previewPos.x, previewPos.y, buildingConfig.size * 0.8, {

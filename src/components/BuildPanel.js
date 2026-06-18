@@ -255,8 +255,8 @@ export class BuildPanel {
 
         this.selectBuilding(buildingType);
         
-        if (this.game.buildingSystem) {
-            this.game.buildingSystem.startPlacement(buildingType);
+        if (this.game.modules && this.game.modules.buildingSystem) {
+            this.game.modules.buildingSystem.startPlacement(buildingType);
         }
     }
 
