@@ -20,6 +20,8 @@ export class Dock {
         this.sailingShipPosition = null;
         this.sailingShipStartPos = null;
         this.sailingShipTargetPos = null;
+        this.sailingPathPoints = [];
+        this.currentPathIndex = 0;
 
         this.init();
     }
@@ -223,6 +225,8 @@ export class Dock {
         this.sailingShipPosition = null;
         this.sailingShipStartPos = null;
         this.sailingShipTargetPos = null;
+        this.sailingPathPoints = [];
+        this.currentPathIndex = 0;
 
         if (destination.requiresSoldiers) {
             this.handleDangerousDestination(destination);
@@ -418,7 +422,93 @@ export class Dock {
             this.sailingShipStartPos = { ...startPos };
             this.sailingShipTargetPos = { x: targetPos.x, y: targetPos.y };
             this.sailingShipPosition = { ...startPos };
+            this.sailingPathPoints = this.generateSailingPath(startPos, targetPos);
+            this.currentPathIndex = 0;
         }
+    }
+
+    generateSailingPath(startPos, targetPos) {
+        if (!this.game || !this.game.terrain) {
+            return [startPos, targetPos];
+        }
+
+        const terrain = this.game.terrain;
+        const center = terrain.getIslandCenter();
+        const beachOuterRadius = terrain.getBeachOuterRadius();
+
+        if (!this.lineIntersectsIsland(startPos, targetPos, center, beachOuterRadius)) {
+            return [startPos, targetPos];
+        }
+
+        const path = [];
+        path.push(startPos);
+
+        const startAngle = Math.atan2(startPos.y - center.y, startPos.x - center.x);
+        const targetAngle = Math.atan2(targetPos.y - center.y, targetPos.x - center.x);
+
+        let angleDiff = targetAngle - startAngle;
+        while (angleDiff <= -Math.PI) angleDiff += Math.PI * 2;
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+
+        const clockwise = angleDiff > 0;
+        const totalAngleDiff = clockwise ? angleDiff : angleDiff + Math.PI * 2;
+        const bypassRadius = beachOuterRadius + 40;
+
+        const angleStep = 0.1;
+        let currentAngle = startAngle;
+        let accumulatedAngle = 0;
+
+        while (accumulatedAngle < totalAngleDiff - 0.05) {
+            currentAngle += clockwise ? angleStep : -angleStep;
+            accumulatedAngle += angleStep;
+
+            const point = {
+                x: center.x + Math.cos(currentAngle) * bypassRadius,
+                y: center.y + Math.sin(currentAngle) * bypassRadius
+            };
+
+            path.push(point);
+        }
+
+        path.push(targetPos);
+
+        return path;
+    }
+
+    lineIntersectsIsland(start, end, center, radius) {
+        const startDist = Math.sqrt(Math.pow(start.x - center.x, 2) + Math.pow(start.y - center.y, 2));
+        const endDist = Math.sqrt(Math.pow(end.x - center.x, 2) + Math.pow(end.y - center.y, 2));
+
+        if (startDist < radius && endDist < radius) {
+            return true;
+        }
+
+        if (startDist >= radius && endDist >= radius) {
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const a = dx * dx + dy * dy;
+            const b = 2 * (dx * (start.x - center.x) + dy * (start.y - center.y));
+            const c = (start.x - center.x) * (start.x - center.x) +
+                      (start.y - center.y) * (start.y - center.y) - radius * radius;
+
+            const discriminant = b * b - 4 * a * c;
+            if (discriminant < 0) {
+                return false;
+            }
+
+            const t1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+            const t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+            return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1);
+        }
+
+        return true;
+    }
+
+    normalizeAngle(angle) {
+        while (angle < 0) angle += Math.PI * 2;
+        while (angle >= Math.PI * 2) angle -= Math.PI * 2;
+        return angle;
     }
 
     renderShips(ctx) {
@@ -498,10 +588,30 @@ export class Dock {
         const elapsed = Date.now() - this.sailStartTime;
         const progress = Math.min(1, elapsed / adjustedDuration);
 
-        const easedProgress = this.easeInOutQuad(progress);
+        this.updateShipPositionAlongPath(progress);
+    }
 
-        this.sailingShipPosition.x = this.sailingShipStartPos.x + (this.sailingShipTargetPos.x - this.sailingShipStartPos.x) * easedProgress;
-        this.sailingShipPosition.y = this.sailingShipStartPos.y + (this.sailingShipTargetPos.y - this.sailingShipStartPos.y) * easedProgress;
+    updateShipPositionAlongPath(progress) {
+        if (this.sailingPathPoints.length < 2) {
+            const easedProgress = this.easeInOutQuad(progress);
+            this.sailingShipPosition.x = this.sailingShipStartPos.x + (this.sailingShipTargetPos.x - this.sailingShipStartPos.x) * easedProgress;
+            this.sailingShipPosition.y = this.sailingShipStartPos.y + (this.sailingShipTargetPos.y - this.sailingShipStartPos.y) * easedProgress;
+            return;
+        }
+
+        const totalSegments = this.sailingPathPoints.length - 1;
+        const segmentProgress = progress * totalSegments;
+        const segmentIndex = Math.floor(segmentProgress);
+        const localProgress = segmentProgress - segmentIndex;
+
+        const clampedSegmentIndex = Math.min(segmentIndex, totalSegments - 1);
+        const startPoint = this.sailingPathPoints[clampedSegmentIndex];
+        const endPoint = this.sailingPathPoints[Math.min(clampedSegmentIndex + 1, totalSegments)];
+
+        const easedLocalProgress = this.easeInOutQuad(localProgress);
+
+        this.sailingShipPosition.x = startPoint.x + (endPoint.x - startPoint.x) * easedLocalProgress;
+        this.sailingShipPosition.y = startPoint.y + (endPoint.y - startPoint.y) * easedLocalProgress;
     }
 
     easeInOutQuad(t) {
