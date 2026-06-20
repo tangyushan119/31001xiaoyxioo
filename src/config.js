@@ -443,3 +443,49 @@ export const ENEMY_TURRET_CONFIGS = {
     catapult: { emoji: '🪨', name: '投石炮塔', health: 200, maxHealth: 200, damage: 30, attackInterval: 2500 },
     cannon: { emoji: '💥', name: '加农炮', health: 250, maxHealth: 250, damage: 45, attackInterval: 3000 }
 };
+
+export const SHOP_CONFIG = {
+    buyItems: {
+        wood: { price: 5, category: 'materials', amount: 10 },
+        stone: { price: 8, category: 'materials', amount: 10 },
+        ore: { price: 12, category: 'materials', amount: 5 },
+        apple: { price: 3, category: 'fruits', amount: 10 },
+        pear: { price: 4, category: 'fruits', amount: 10 },
+        treeSeed: { price: 10, category: 'seeds', amount: 5 },
+        fruitSeed: { price: 15, category: 'seeds', amount: 5 },
+        wheatSeed: { price: 8, category: 'seeds', amount: 5 },
+        carrotSeed: { price: 8, category: 'seeds', amount: 5 },
+        tomatoSeed: { price: 10, category: 'seeds', amount: 5 },
+        cornSeed: { price: 12, category: 'seeds', amount: 5 },
+        water: { price: 2, category: 'supplies', amount: 20 },
+        wheatHarvest: { price: 5, category: 'food', amount: 10 },
+        carrotHarvest: { price: 6, category: 'food', amount: 10 },
+        tomatoHarvest: { price: 7, category: 'food', amount: 10 },
+        cornHarvest: { price: 8, category: 'food', amount: 10 }
+    },
+    sellItems: {
+        wood: { price: 3, category: 'materials', amount: 1 },
+        stone: { price: 5, category: 'materials', amount: 1 },
+        ore: { price: 8, category: 'materials', amount: 1 },
+        apple: { price: 2, category: 'fruits', amount: 1 },
+        pear: { price: 2, category: 'fruits', amount: 1 },
+        treeSeed: { price: 5, category: 'seeds', amount: 1 },
+        fruitSeed: { price: 8, category: 'seeds', amount: 1 },
+        wheatSeed: { price: 4, category: 'seeds', amount: 1 },
+        carrotSeed: { price: 4, category: 'seeds', amount: 1 },
+        tomatoSeed: { price: 5, category: 'seeds', amount: 1 },
+        cornSeed: { price: 6, category: 'seeds', amount: 1 },
+        water: { price: 1, category: 'supplies', amount: 1 },
+        wheatHarvest: { price: 3, category: 'food', amount: 1 },
+        carrotHarvest: { price: 3, category: 'food', amount: 1 },
+        tomatoHarvest: { price: 4, category: 'food', amount: 1 },
+        cornHarvest: { price: 4, category: 'food', amount: 1 }
+    },
+    shopCategories: {
+        materials: { name: '材料', icon: '📦' },
+        fruits: { name: '水果', icon: '🍎' },
+        seeds: { name: '种子', icon: '🌱' },
+        food: { name: '食物', icon: '🍞' },
+        supplies: { name: '补给', icon: '💧' }
+    }
+};

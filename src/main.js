@@ -18,6 +18,8 @@ import { ResourceSystem } from './modules/ResourceSystem.js';
 import { RenderSystem } from './modules/RenderSystem.js';
 import { BattleSystem } from './modules/BattleSystem.js';
 import { GAME_CONFIG } from './config.js';
+import { Shop } from './modules/Shop.js';
+import { ShopPanel } from './components/ShopPanel.js';
 
 export class Game {
     constructor() {
@@ -39,6 +41,8 @@ export class Game {
         this.player = null;
         this.buildPanel = null;
         this.inventoryPanel = null;
+        this.shop = null;
+        this.shopPanel = null;
         this.resourceManager = null;
         this.enemyManager = null;
         this.turretManager = null;
@@ -104,6 +108,9 @@ export class Game {
 
         this.buildPanel = new BuildPanel(this);
         this.inventoryPanel = new InventoryPanel(this);
+
+        this.shop = new Shop(this);
+        this.shopPanel = new ShopPanel(this);
 
         this.resourceManager = new ResourceManager(this);
 
@@ -395,6 +402,10 @@ export class Game {
 
     getInventoryPanel() {
         return this.inventoryPanel;
+    }
+
+    getShop() {
+        return this.shop;
     }
 
     getResourceManager() {
