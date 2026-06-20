@@ -175,6 +175,8 @@ export class Dock {
         const foodNeeded = this.foodConsumptionPerSail[destinationId];
         this.game.storage.modifyResource('wheatHarvest', -foodNeeded);
 
+        this.calculateSailingPositions(shipId, destinationId);
+
         ship.isDocked = false;
         ship.currentDestination = destinationId;
 
@@ -192,8 +194,6 @@ export class Dock {
         this.sailTimer = setTimeout(() => {
             this.completeSail(destinationId, shipId);
         }, adjustedDuration);
-
-        this.calculateSailingPositions(shipId, destinationId);
 
         this.saveToStorage();
 
@@ -377,9 +377,15 @@ export class Dock {
         const docks = this.game.storage.getBuildings().filter(b => b.type === 'dock');
         if (docks.length === 0) return null;
 
+        const allShips = this.ships;
         const dockedShips = this.getDockedShips();
+        
+        const ship = allShips.find(s => s.id === shipId);
+        if (!ship) return null;
+
         const shipIndex = dockedShips.findIndex(s => s.id === shipId);
-        if (shipIndex === -1) return null;
+        const fallbackIndex = allShips.findIndex(s => s.id === shipId);
+        const index = shipIndex !== -1 ? shipIndex : fallbackIndex;
 
         const dock = docks[0];
         const terrain = this.game.terrain;
@@ -393,10 +399,11 @@ export class Dock {
         const seaStartRadius = beachOuterRadius + 20;
         const shipRadius = seaStartRadius + 40;
 
+        const totalShips = allShips.length;
         const spacingAngle = 0.15;
-        const startAngle = angle - spacingAngle * (dockedShips.length - 1) / 2;
+        const startAngle = angle - spacingAngle * (totalShips - 1) / 2;
 
-        const shipAngle = startAngle + shipIndex * spacingAngle;
+        const shipAngle = startAngle + index * spacingAngle;
         return {
             x: center.x + Math.cos(shipAngle) * shipRadius,
             y: center.y + Math.sin(shipAngle) * shipRadius
