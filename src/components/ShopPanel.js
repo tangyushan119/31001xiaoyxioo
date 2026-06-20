@@ -179,7 +179,18 @@ export class ShopPanel {
             const currentAmount = storage.getResource(key);
             const price = config.price;
             const amount = config.amount;
-            const canAfford = this.activeTab === 'buy' ? storage.getResource('gold') >= price : currentAmount >= amount;
+
+            let maxQuantity = 1;
+            if (this.activeTab === 'buy') {
+                const gold = storage.getResource('gold');
+                maxQuantity = Math.floor(gold / price);
+                const remainingCapacity = storage.getStorageCapacity() - storage.getTotalResourceAmount();
+                const maxByCapacity = Math.floor(remainingCapacity / amount);
+                maxQuantity = Math.max(0, Math.min(maxQuantity, maxByCapacity));
+            } else {
+                maxQuantity = Math.floor(currentAmount / amount);
+            }
+            const canAfford = maxQuantity >= 1;
 
             const itemDiv = document.createElement('div');
             itemDiv.className = 'shop-item';
@@ -207,6 +218,41 @@ export class ShopPanel {
             priceSpan.textContent = this.activeTab === 'buy' ? '💰 ' + price + ' / ' + amount + '个' : '💰 +' + price + ' / ' + amount + '个';
             priceDiv.appendChild(priceSpan);
 
+            const quantityDiv = document.createElement('div');
+            quantityDiv.className = 'shop-quantity-control';
+
+            const minusBtn = document.createElement('button');
+            minusBtn.className = 'quantity-btn quantity-minus';
+            minusBtn.textContent = '-';
+            minusBtn.dataset.resource = key;
+            minusBtn.dataset.action = 'minus';
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'quantity-input';
+            input.min = '1';
+            input.max = maxQuantity || '1';
+            input.value = '1';
+            input.dataset.resource = key;
+
+            const plusBtn = document.createElement('button');
+            plusBtn.className = 'quantity-btn quantity-plus';
+            plusBtn.textContent = '+';
+            plusBtn.dataset.resource = key;
+            plusBtn.dataset.action = 'plus';
+
+            const maxBtn = document.createElement('button');
+            maxBtn.className = 'quantity-btn quantity-max';
+            maxBtn.textContent = '最大';
+            maxBtn.dataset.resource = key;
+            maxBtn.dataset.action = 'max';
+            maxBtn.dataset.max = maxQuantity;
+
+            quantityDiv.appendChild(minusBtn);
+            quantityDiv.appendChild(input);
+            quantityDiv.appendChild(plusBtn);
+            quantityDiv.appendChild(maxBtn);
+
             const btn = document.createElement('button');
             btn.className = 'shop-action-btn' + (canAfford ? '' : ' disabled');
             btn.dataset.action = this.activeTab === 'buy' ? 'buy' : 'sell';
@@ -216,6 +262,7 @@ export class ShopPanel {
             itemDiv.appendChild(emojiSpan);
             itemDiv.appendChild(infoDiv);
             itemDiv.appendChild(priceDiv);
+            itemDiv.appendChild(quantityDiv);
             itemDiv.appendChild(btn);
             itemsContainer.appendChild(itemDiv);
         }
@@ -228,22 +275,62 @@ export class ShopPanel {
             btn.addEventListener('click', (e) => {
                 const resourceKey = e.target.dataset.resource;
                 const action = e.target.dataset.action;
-                if (action === 'buy') this.onBuyItem(resourceKey);
-                else if (action === 'sell') this.onSellItem(resourceKey);
+                const quantity = this.getQuantityInput(resourceKey);
+                if (action === 'buy') this.onBuyItem(resourceKey, quantity);
+                else if (action === 'sell') this.onSellItem(resourceKey, quantity);
+            });
+        });
+
+        const quantityBtns = this.panel.querySelectorAll('.quantity-btn');
+        quantityBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const resourceKey = e.target.dataset.resource;
+                const action = e.target.dataset.action;
+                this.updateQuantityInput(resourceKey, action);
             });
         });
     }
 
-    onBuyItem(resourceKey) {
+    getQuantityInput(resourceKey) {
+        const input = this.panel.querySelector('.quantity-input[data-resource="' + resourceKey + '"]');
+        if (input) {
+            const value = parseInt(input.value);
+            const max = parseInt(input.max);
+            const min = parseInt(input.min);
+            return Math.max(min, Math.min(max, isNaN(value) ? 1 : value));
+        }
+        return 1;
+    }
+
+    updateQuantityInput(resourceKey, action) {
+        const input = this.panel.querySelector('.quantity-input[data-resource="' + resourceKey + '"]');
+        if (!input) return;
+
+        let value = parseInt(input.value);
+        const max = parseInt(input.max);
+        const min = parseInt(input.min);
+
+        if (action === 'minus') {
+            value = Math.max(min, value - 1);
+        } else if (action === 'plus') {
+            value = Math.min(max, value + 1);
+        } else if (action === 'max') {
+            value = max;
+        }
+
+        input.value = value;
+    }
+
+    onBuyItem(resourceKey, quantity = 1) {
         const shop = this.game.getShop();
-        const result = shop.buyItem(resourceKey);
+        const result = shop.buyItem(resourceKey, quantity);
         this.showToast(result.message, result.success ? 'success' : 'error');
         this.updateShop();
     }
 
-    onSellItem(resourceKey) {
+    onSellItem(resourceKey, quantity = 1) {
         const shop = this.game.getShop();
-        const result = shop.sellItem(resourceKey);
+        const result = shop.sellItem(resourceKey, quantity);
         this.showToast(result.message, result.success ? 'success' : 'error');
         this.updateShop();
     }

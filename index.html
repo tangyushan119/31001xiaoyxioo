@@ -1316,6 +1316,70 @@
             transform: none;
             box-shadow: none;
         }
+
+        .shop-quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 120px;
+        }
+
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-btn:hover {
+            background: rgba(59, 130, 246, 0.4);
+            border-color: #3b82f6;
+            transform: scale(1.1);
+        }
+
+        .quantity-btn.quantity-max {
+            width: auto;
+            padding: 0 8px;
+            font-size: 11px;
+        }
+
+        .quantity-input {
+            width: 50px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .quantity-input::-webkit-inner-spin-button,
+        .quantity-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .quantity-input[type=number] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body>
