@@ -170,6 +170,10 @@ export class Game {
             this.battleSystem.update(deltaTime);
         }
 
+        if (this.dock) {
+            this.dock.update(deltaTime);
+        }
+
         if (this.buildPanel) {
             this.buildPanel.updateTrainingPanel();
         }

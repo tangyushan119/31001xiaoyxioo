@@ -17,6 +17,10 @@ export class Dock {
         this.destroyedIslands = new Set();
         this.refreshTimers = {};
 
+        this.sailingShipPosition = null;
+        this.sailingShipStartPos = null;
+        this.sailingShipTargetPos = null;
+
         this.init();
     }
 
@@ -189,6 +193,8 @@ export class Dock {
             this.completeSail(destinationId, shipId);
         }, adjustedDuration);
 
+        this.calculateSailingPositions(shipId, destinationId);
+
         this.saveToStorage();
 
         return {
@@ -214,6 +220,9 @@ export class Dock {
         this.sailStartTime = null;
         this.currentDestination = null;
         this.sailingShipId = null;
+        this.sailingShipPosition = null;
+        this.sailingShipStartPos = null;
+        this.sailingShipTargetPos = null;
 
         if (destination.requiresSoldiers) {
             this.handleDangerousDestination(destination);
@@ -364,6 +373,47 @@ export class Dock {
         ctx.restore();
     }
 
+    getDockedShipPosition(shipId) {
+        const docks = this.game.storage.getBuildings().filter(b => b.type === 'dock');
+        if (docks.length === 0) return null;
+
+        const dockedShips = this.getDockedShips();
+        const shipIndex = dockedShips.findIndex(s => s.id === shipId);
+        if (shipIndex === -1) return null;
+
+        const dock = docks[0];
+        const terrain = this.game.terrain;
+        const center = terrain.getIslandCenter();
+        const beachOuterRadius = terrain.getBeachOuterRadius();
+
+        const dx = dock.x - center.x;
+        const dy = dock.y - center.y;
+        const angle = Math.atan2(dy, dx);
+
+        const seaStartRadius = beachOuterRadius + 20;
+        const shipRadius = seaStartRadius + 40;
+
+        const spacingAngle = 0.15;
+        const startAngle = angle - spacingAngle * (dockedShips.length - 1) / 2;
+
+        const shipAngle = startAngle + shipIndex * spacingAngle;
+        return {
+            x: center.x + Math.cos(shipAngle) * shipRadius,
+            y: center.y + Math.sin(shipAngle) * shipRadius
+        };
+    }
+
+    calculateSailingPositions(shipId, destinationId) {
+        const startPos = this.getDockedShipPosition(shipId);
+        const targetPos = this.getIslandPosition(destinationId);
+
+        if (startPos && targetPos) {
+            this.sailingShipStartPos = { ...startPos };
+            this.sailingShipTargetPos = { x: targetPos.x, y: targetPos.y };
+            this.sailingShipPosition = { ...startPos };
+        }
+    }
+
     renderShips(ctx) {
         if (!this.game || !this.game.terrain) return;
 
@@ -371,7 +421,6 @@ export class Dock {
         if (docks.length === 0) return;
 
         const dockedShips = this.getDockedShips();
-        if (dockedShips.length === 0) return;
 
         const dock = docks[0];
         const terrain = this.game.terrain;
@@ -406,6 +455,50 @@ export class Dock {
 
             ctx.restore();
         });
+
+        this.renderSailingShip(ctx);
+    }
+
+    renderSailingShip(ctx) {
+        if (!this.isSailing || !this.sailingShipPosition) return;
+
+        const ship = this.ships.find(s => s.id === this.sailingShipId);
+        if (!ship) return;
+
+        ctx.save();
+
+        ctx.font = '35px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ship.emoji, this.sailingShipPosition.x, this.sailingShipPosition.y);
+
+        ctx.font = '10px Arial';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillText(ship.name, this.sailingShipPosition.x, this.sailingShipPosition.y + 25);
+
+        ctx.restore();
+    }
+
+    update(deltaTime) {
+        if (!this.isSailing || !this.sailingShipPosition || !this.sailingShipStartPos || !this.sailingShipTargetPos) {
+            return;
+        }
+
+        const ship = this.ships.find(s => s.id === this.sailingShipId);
+        if (!ship) return;
+
+        const adjustedDuration = this.sailDuration / ship.speed;
+        const elapsed = Date.now() - this.sailStartTime;
+        const progress = Math.min(1, elapsed / adjustedDuration);
+
+        const easedProgress = this.easeInOutQuad(progress);
+
+        this.sailingShipPosition.x = this.sailingShipStartPos.x + (this.sailingShipTargetPos.x - this.sailingShipStartPos.x) * easedProgress;
+        this.sailingShipPosition.y = this.sailingShipStartPos.y + (this.sailingShipTargetPos.y - this.sailingShipStartPos.y) * easedProgress;
+    }
+
+    easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     }
 
     renderNPCIslands(ctx) {
